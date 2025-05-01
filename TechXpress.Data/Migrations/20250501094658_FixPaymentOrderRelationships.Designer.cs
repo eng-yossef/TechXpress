@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TechXpress.Data.Models.Contexts;
 
@@ -11,9 +12,11 @@ using TechXpress.Data.Models.Contexts;
 namespace TechXpress.Data.Migrations
 {
     [DbContext(typeof(TechXpressDbContext))]
-    partial class TechXpressDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250501094658_FixPaymentOrderRelationships")]
+    partial class FixPaymentOrderRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -239,6 +242,9 @@ namespace TechXpress.Data.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ProductId1")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -248,6 +254,8 @@ namespace TechXpress.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductId1");
 
                     b.HasIndex("ShoppingCartId");
 
@@ -344,6 +352,9 @@ namespace TechXpress.Data.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ProductId1")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -352,6 +363,8 @@ namespace TechXpress.Data.Migrations
                     b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductId1");
 
                     b.ToTable("OrderDetails");
                 });
@@ -572,10 +585,14 @@ namespace TechXpress.Data.Migrations
             modelBuilder.Entity("TechXpress.Data.Models.CartItem", b =>
                 {
                     b.HasOne("TechXpress.Data.Models.Product", "Product")
-                        .WithMany("CartItems")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("TechXpress.Data.Models.Product", null)
+                        .WithMany("CartItems")
+                        .HasForeignKey("ProductId1");
 
                     b.HasOne("TechXpress.Data.Models.ShoppingCart", "ShoppingCart")
                         .WithMany("Items")
@@ -608,10 +625,14 @@ namespace TechXpress.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("TechXpress.Data.Models.Product", "Product")
-                        .WithMany("OrderDetails")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("TechXpress.Data.Models.Product", null)
+                        .WithMany("OrderDetails")
+                        .HasForeignKey("ProductId1");
 
                     b.Navigation("Order");
 
