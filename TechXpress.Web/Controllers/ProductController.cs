@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TechXpress.Services.Product;
 
 namespace TechXpress.Web.Controllers
 {
+    //[Authorize]
     public class ProductController : Controller
     {
         public readonly IProductService _productService;

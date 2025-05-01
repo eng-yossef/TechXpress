@@ -1,4 +1,6 @@
 ﻿using TechXpress.Data.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace TechXpress.Data.Models.Contexts
 {
-    public class TechXpressDbContext:DbContext
+    public class TechXpressDbContext : IdentityDbContext<ApplicationUser>
     {
         public TechXpressDbContext(DbContextOptions<TechXpressDbContext> options) : base(options) { }
 
@@ -17,7 +19,12 @@ namespace TechXpress.Data.Models.Contexts
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Review> Reviews { get; set; }
-    
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder); // This is needed for Identity to work
+
+            // Add your existing model configurations here
+        }
     }
 }

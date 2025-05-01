@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TechXpress.Data.Models;
 using TechXpress.Data.Models.Contexts;
 using TechXpress.Data.Repositories.Category;
 using TechXpress.Data.Repositories.Order;
@@ -16,42 +18,50 @@ namespace TechXpress.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            //add  Services Here
-            builder.Services.AddScoped<IProductService, ProductService>();
-
+            // Updated DbContext registration with migrations assembly
             builder.Services.AddDbContext<TechXpressDbContext>(options =>
-               options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-                   );
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    b => b.MigrationsAssembly("TechXpress.Data")));
+
+            // Updated Identity configuration
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.User.RequireUniqueEmail = true;
+            })
+            .AddEntityFrameworkStores<TechXpressDbContext>()
+            .AddDefaultTokenProviders();
+
+            // Add Services Here
+            builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
             builder.Services.AddScoped<IOrderDetailsRepository, OrderDetailsRepository>();
-
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            //.Services.AddScoped<IOrderRepository, OrderRepository>();
-
 
             var app = builder.Build();
-
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
+            app.UseAuthentication(); 
             app.UseAuthorization();
 
             app.MapControllerRoute(
