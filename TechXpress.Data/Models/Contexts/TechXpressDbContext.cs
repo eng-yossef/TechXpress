@@ -1,4 +1,4 @@
-﻿using Demo.DAL.Models;
+﻿using TechXpress.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

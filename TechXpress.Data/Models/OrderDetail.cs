@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Demo.DAL.Models
+namespace TechXpress.Data.Models
 {
     public class OrderDetail
     {
