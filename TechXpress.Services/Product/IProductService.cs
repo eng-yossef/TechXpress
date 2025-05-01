@@ -8,5 +8,6 @@ namespace TechXpress.Services.Product
 {
     public interface IProductService
     {
+        public string test();
     }
 }

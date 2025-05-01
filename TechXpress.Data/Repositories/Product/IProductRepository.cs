@@ -8,5 +8,6 @@ namespace TechXpress.Data.Repositories.Product
 {
     public interface IProductRepository
     {
+        public string test();
     }
 }

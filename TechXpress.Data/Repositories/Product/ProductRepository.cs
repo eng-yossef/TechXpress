@@ -8,5 +8,9 @@ namespace TechXpress.Data.Repositories.Product
 {
     public class ProductRepository : IProductRepository
     {
+        public string test()
+        {
+            return "Product Repository Runs Successfully";
+        }
     }
 }

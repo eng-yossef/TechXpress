@@ -21,7 +21,7 @@ namespace TechXpress.Web
             builder.Services.AddControllersWithViews();
 
             //add  Services Here
-            //builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
 
             builder.Services.AddDbContext<TechXpressDbContext>(options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
