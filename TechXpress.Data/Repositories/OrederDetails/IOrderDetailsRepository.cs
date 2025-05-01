@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TechXpress.Data.Repositories
+namespace TechXpress.Data.Repositories.OrederDetails
 {
-    internal interface IRepository
+    public interface IOrderDetailsRepository
     {
     }
 }

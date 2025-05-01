@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TechXpress.Data.Repositories.Product
+namespace TechXpress.Data.Repositories.Category
 {
-    public interface IProductRepository
+    public class CategoryRepository:ICategoryRepository
     {
+
     }
 }

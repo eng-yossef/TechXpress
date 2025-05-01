@@ -1,3 +1,11 @@
+using Microsoft.EntityFrameworkCore;
+using TechXpress.Data.Models.Contexts;
+using TechXpress.Data.Repositories.Category;
+using TechXpress.Data.Repositories.Order;
+using TechXpress.Data.Repositories.OrederDetails;
+using TechXpress.Data.Repositories.Product;
+using TechXpress.Data.Repositories.Review;
+using TechXpress.Data.UnitOfWork;
 using TechXpress.Services.Product;
 
 namespace TechXpress.Web
@@ -8,22 +16,24 @@ namespace TechXpress.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
+
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
             //add  Services Here
-            builder.Services.AddScoped<IProductService, ProductService>();
+            //builder.Services.AddScoped<IProductService, ProductService>();
 
+            builder.Services.AddDbContext<TechXpressDbContext>(options =>
+               options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+                   );
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+            builder.Services.AddScoped<IOrderDetailsRepository, OrderDetailsRepository>();
 
-
-
-
-
-
-
-
-
-
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            //.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 
             var app = builder.Build();
