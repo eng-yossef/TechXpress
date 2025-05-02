@@ -4,8 +4,8 @@ using TechXpress.Data.Models;
 using TechXpress.Data.Models.Contexts;
 using TechXpress.Data.Repositories.CategoryRepo;
 using TechXpress.Data.Repositories.GenericRepository;
+using TechXpress.Data.Repositories.OrderDetailRepo;
 using TechXpress.Data.Repositories.OrderRepo;
-using TechXpress.Data.Repositories.OrederDetailsRepo;
 using TechXpress.Data.Repositories.ProductRepo;
 using TechXpress.Data.Repositories.ReviewRepo;
 using TechXpress.Data.UnitOfWork;
@@ -48,7 +48,7 @@ namespace TechXpress.Web
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-            builder.Services.AddScoped<IOrderDetailsRepository, OrderDetailsRepository>();
+            builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();

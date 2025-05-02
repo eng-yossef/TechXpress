@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using TechXpress.Data.Models.Contexts;
 using TechXpress.Data.Repositories.CategoryRepo;
+using TechXpress.Data.Repositories.OrderDetailRepo;
 using TechXpress.Data.Repositories.OrderRepo;
-using TechXpress.Data.Repositories.OrederDetailsRepo;
 using TechXpress.Data.Repositories.ProductRepo;
 using TechXpress.Data.Repositories.ReviewRepo;
 
@@ -19,7 +19,7 @@ namespace TechXpress.Data.UnitOfWork
         public IProductRepository Products { get;  set; }
         public ICategoryRepository Categories { get;  set; }
         public IOrderRepository Orders { get;  set; }
-        public IOrderDetailsRepository OrderDetails { get;  set; }
+        public IOrderDetailRepository OrderDetails { get;  set; }
         public IReviewRepository Reviews { get;  set; }
 
         public UnitOfWork(
@@ -27,7 +27,7 @@ namespace TechXpress.Data.UnitOfWork
             IProductRepository productRepository,
             ICategoryRepository categoryRepository,
             IOrderRepository orderRepository,
-            IOrderDetailsRepository orderDetailsRepository,
+            IOrderDetailRepository orderDetailsRepository,
             IReviewRepository reviewRepository)
         {
             _context = context;
