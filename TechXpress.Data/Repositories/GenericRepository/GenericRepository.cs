@@ -10,8 +10,8 @@ namespace TechXpress.Data.Repositories.GenericRepository
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private readonly TechXpressDbContext _context;
-        private readonly DbSet<T> _dbSet;
+        protected readonly TechXpressDbContext _context;
+        protected readonly DbSet<T> _dbSet;
 
         public GenericRepository(TechXpressDbContext context)
         {

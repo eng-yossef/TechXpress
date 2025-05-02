@@ -26,15 +26,16 @@ namespace TechXpress.Data.Models
 
         [Required]
         [Range(0, int.MaxValue)]
-        public int Stock { get; set; } = 0;
+        public int StockQuantity { get; set; }
 
+        public bool IsFeatured { get; set; } = false;
         [Url]
         [StringLength(500)]
         public string? ImageUrl { get; set; }
 
         [Required]
         [DataType(DataType.DateTime)]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         [DataType(DataType.DateTime)]
         public DateTime? UpdatedAt { get; set; }

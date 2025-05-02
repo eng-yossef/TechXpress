@@ -1,0 +1,28 @@
+﻿<table id="myTable" class="display">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Office</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Tiger Nixon</td>
+            <td>System Architect</td>
+            <td>Edinburgh</td>
+        </tr>
+        <!-- more rows -->
+    </tbody>
+</table>
+
+<!-- Include jQuery and DataTables -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+
+<script>
+    $(document).ready(function () {
+      $('#myTable').DataTable();
+    });
+</script>
