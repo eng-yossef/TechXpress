@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TechXpress.Data.Repositories.Product
+namespace TechXpress.Data.Repositories.ReviewRepo
 {
-    public interface IProductRepository
+    public interface IReviewRepository
     {
-        public string test();
     }
 }

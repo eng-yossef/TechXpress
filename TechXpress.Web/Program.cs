@@ -2,11 +2,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TechXpress.Data.Models;
 using TechXpress.Data.Models.Contexts;
-using TechXpress.Data.Repositories.Category;
-using TechXpress.Data.Repositories.Order;
-using TechXpress.Data.Repositories.OrederDetails;
-using TechXpress.Data.Repositories.Product;
-using TechXpress.Data.Repositories.Review;
+using TechXpress.Data.Repositories.CategoryRepo;
+using TechXpress.Data.Repositories.GenericRepository;
+using TechXpress.Data.Repositories.OrderRepo;
+using TechXpress.Data.Repositories.OrederDetailsRepo;
+using TechXpress.Data.Repositories.ProductRepo;
+using TechXpress.Data.Repositories.ReviewRepo;
 using TechXpress.Data.UnitOfWork;
 using TechXpress.Services.Product;
 
@@ -41,6 +42,7 @@ namespace TechXpress.Web
             .AddDefaultTokenProviders();
 
             // Add Services Here
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();

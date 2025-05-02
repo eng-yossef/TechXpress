@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TechXpress.Data.Repositories.Category;
-using TechXpress.Data.Repositories.Order;
-using TechXpress.Data.Repositories.OrederDetails;
-using TechXpress.Data.Repositories.Product;
-using TechXpress.Data.Repositories.Review;
+using TechXpress.Data.Repositories.CategoryRepo;
+using TechXpress.Data.Repositories.OrderRepo;
+using TechXpress.Data.Repositories.OrederDetailsRepo;
+using TechXpress.Data.Repositories.ProductRepo;
+using TechXpress.Data.Repositories.ReviewRepo;
 
 namespace TechXpress.Data.UnitOfWork
 {
@@ -19,6 +19,8 @@ namespace TechXpress.Data.UnitOfWork
         IOrderDetailsRepository OrderDetails { get; }
         IReviewRepository Reviews { get; }
 
-        int Complete(); // equivalent to SaveChanges()
+        Task<int> CompleteAsync(); // Async version of SaveChanges
+
+
     }
 }

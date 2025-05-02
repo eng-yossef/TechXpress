@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TechXpress.Data.Repositories.Order
+namespace TechXpress.Data.Repositories.ReviewRepo
 {
-    public class OrderRepository:IOrderRepository
+    public class ReviewRepository:IReviewRepository
     {
     }
 }

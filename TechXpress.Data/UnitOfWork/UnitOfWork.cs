@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechXpress.Data.Models.Contexts;
-using TechXpress.Data.Repositories.Category;
-using TechXpress.Data.Repositories.Order;
-using TechXpress.Data.Repositories.OrederDetails;
-using TechXpress.Data.Repositories.Product;
-using TechXpress.Data.Repositories.Review;
+using TechXpress.Data.Repositories.CategoryRepo;
+using TechXpress.Data.Repositories.OrderRepo;
+using TechXpress.Data.Repositories.OrederDetailsRepo;
+using TechXpress.Data.Repositories.ProductRepo;
+using TechXpress.Data.Repositories.ReviewRepo;
 
 namespace TechXpress.Data.UnitOfWork
 {
@@ -38,9 +38,9 @@ namespace TechXpress.Data.UnitOfWork
             Reviews = reviewRepository;
         }
 
-        public int Complete()
+        public async Task<int> CompleteAsync()
         {
-            return _context.SaveChanges();
+            return await _context.SaveChangesAsync();
         }
 
         public void Dispose()
