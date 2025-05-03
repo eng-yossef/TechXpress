@@ -49,7 +49,8 @@ namespace TechXpress.Web
             .AddEntityFrameworkStores<TechXpressDbContext>()
             .AddDefaultTokenProviders();
 
-            // Add Services Here
+            //Add Repositories Here
+
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -62,7 +63,7 @@ namespace TechXpress.Web
 
 
 
-
+            // Add Services Here
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICartItemService, CartItemService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
@@ -70,6 +71,8 @@ namespace TechXpress.Web
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IOrderDetailsService, OrderDetailsService>();
             builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
+
+
 
 
 

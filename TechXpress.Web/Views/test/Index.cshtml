@@ -1,0 +1,8 @@
+﻿@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    <p>Welcome back, @User.Identity.Name!</p>
+}
+else
+{
+    <p>Please <a href="/Account/Login">log in</a> to continue.</p>
+}
