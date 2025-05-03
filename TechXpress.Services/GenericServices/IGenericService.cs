@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace TechXpress.Services.GenericServices
@@ -11,8 +10,18 @@ namespace TechXpress.Services.GenericServices
         Task<IEnumerable<T>> GetAllAsync();
         Task<T> GetByIdAsync(object id);
         Task AddAsync(T entity);
-        void Update(T entity);
-        void Delete(T entity);
+        Task UpdateAsync(T entity);  // Changed to async
+        Task DeleteAsync(T entity);  // Changed to async
+        Task DeleteAsync(object id); // Added overload
         Task SaveAsync();
+
+        // Optional advanced methods
+        Task<bool> ExistsAsync(object id);
+        Task<IEnumerable<T>> GetFilteredAsync(
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            string includeProperties = "",
+            int? skip = null,
+            int? take = null);
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TechXpress.Data.Models;
 using TechXpress.Data.Models.Contexts;
+using TechXpress.Data.Repositories.CartItemRepo;
 using TechXpress.Data.Repositories.CategoryRepo;
 using TechXpress.Data.Repositories.GenericRepository;
 using TechXpress.Data.Repositories.OrderDetailRepo;
@@ -9,7 +10,14 @@ using TechXpress.Data.Repositories.OrderRepo;
 using TechXpress.Data.Repositories.ProductRepo;
 using TechXpress.Data.Repositories.ReviewRepo;
 using TechXpress.Data.UnitOfWork;
+using TechXpress.Services.CartItemsService;
+using TechXpress.Services.CategoriesService;
+using TechXpress.Services.OrdersService;
 using TechXpress.Services.ProductsService;
+using TechXpress.Services.ReviewsService;
+using TechXpress.Services.OrdersDetailsService;
+using TechXpress.Services.ShoppingCartsService;
+using TechXpress.Data.Repositories.ShoppingCartRepo;
 
 namespace TechXpress.Web
 {
@@ -43,13 +51,28 @@ namespace TechXpress.Web
 
             // Add Services Here
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
             builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
+            builder.Services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+
+
+
+
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<ICartItemService, CartItemService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IOrderDetailsService, OrderDetailsService>();
+            builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
+
+
+
 
             var app = builder.Build();
 

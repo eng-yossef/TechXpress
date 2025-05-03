@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
+using TechXpress.Data.Models;
 using TechXpress.Data.Repositories.GenericRepository;
-using TechXpress.Services.GenericServices;
 
 namespace TechXpress.Services.GenericServices
 {
@@ -34,14 +37,55 @@ namespace TechXpress.Services.GenericServices
             _repository.Update(entity);
         }
 
+        public async Task UpdateAsync(T entity)
+        {
+            _repository.Update(entity);
+            await _repository.SaveAsync();
+        }
+
         public void Delete(T entity)
         {
             _repository.Delete(entity);
         }
 
+        public async Task DeleteAsync(T entity)
+        {
+            _repository.Delete(entity);
+            await _repository.SaveAsync();
+        }
+
+        public async Task DeleteAsync(object id)
+        {
+            var entity = await GetByIdAsync(id);
+            if (entity != null)
+            {
+                await DeleteAsync(entity);
+            }
+        }
+
         public async Task SaveAsync()
         {
             await _repository.SaveAsync();
+        }
+
+        public async Task<bool> ExistsAsync(object id)
+        {
+            return await _repository.GetByIdAsync(id) != null;
+        }
+
+        public async Task<IEnumerable<T>> GetFilteredAsync(
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            string includeProperties = "",
+            int? skip = null,
+            int? take = null)
+        {
+            return await _repository.GetFilteredAsync(
+                filter,
+                orderBy,
+                includeProperties,
+                skip,
+                take);
         }
     }
 }
