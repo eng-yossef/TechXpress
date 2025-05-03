@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TechXpress.Services.CategoriesService;
 using TechXpress.Services.ProductsService;
 
@@ -57,6 +59,13 @@ namespace TechXpress.Web.Controllers
 
             //return Content(result);
             return View();
+        }
+        [Authorize]
+        public IActionResult ShowUserId()
+        {
+            // Example usage of the services
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return Content(userId);
         }
     }
 }

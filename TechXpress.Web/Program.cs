@@ -36,7 +36,7 @@ namespace TechXpress.Web
                     builder.Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly("TechXpress.Data")));
 
-            // Updated Identity configuration
+            // Updated Identity configuration with custom ApplicationUser
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -49,8 +49,7 @@ namespace TechXpress.Web
             .AddEntityFrameworkStores<TechXpressDbContext>()
             .AddDefaultTokenProviders();
 
-            //Add Repositories Here
-
+            // Add Repositories Here
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -61,8 +60,6 @@ namespace TechXpress.Web
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 
-
-
             // Add Services Here
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICartItemService, CartItemService>();
@@ -71,11 +68,6 @@ namespace TechXpress.Web
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IOrderDetailsService, OrderDetailsService>();
             builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
-
-
-
-
-
 
             var app = builder.Build();
 
@@ -89,7 +81,7 @@ namespace TechXpress.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseAuthentication(); 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
