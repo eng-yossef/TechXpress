@@ -5,10 +5,10 @@ using TechXpress.Services.ProductsService;
 namespace TechXpress.Web.Controllers
 {
     //[Authorize]
-    public class ProductController : Controller
+    public class ProductsController : Controller
     {
         public readonly IProductService _productService;
-        public ProductController(IProductService productService)
+        public ProductsController(IProductService productService)
         {
             _productService = productService;
         }
