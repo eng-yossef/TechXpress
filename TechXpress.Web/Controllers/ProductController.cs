@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TechXpress.Services.Product;
+using TechXpress.Services.ProductsService;
 
 namespace TechXpress.Web.Controllers
 {
@@ -13,10 +13,11 @@ namespace TechXpress.Web.Controllers
             _productService = productService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            //return View();
-            return Content(_productService.test());
+            var result = await _productService.GetByIdAsync(1);
+            return Content(result.Name);
         }
+
     }
 }

@@ -9,7 +9,7 @@ using TechXpress.Data.Repositories.OrderRepo;
 using TechXpress.Data.Repositories.ProductRepo;
 using TechXpress.Data.Repositories.ReviewRepo;
 using TechXpress.Data.UnitOfWork;
-using TechXpress.Services.Product;
+using TechXpress.Services.ProductsService;
 
 namespace TechXpress.Web
 {
