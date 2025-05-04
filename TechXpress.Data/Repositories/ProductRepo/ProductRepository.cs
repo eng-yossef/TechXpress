@@ -25,6 +25,7 @@ namespace TechXpress.Data.Repositories.ProductRepo
         {
             return await _context.Products
                 .Include(p => p.Category)
+                .Include(p=>p.Specifications)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -33,6 +34,7 @@ namespace TechXpress.Data.Repositories.ProductRepo
         {
             return await _context.Products
                 .Include(p => p.Category)
+                .Include(p=>p.Specifications)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 

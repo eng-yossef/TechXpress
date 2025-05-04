@@ -1,146 +1,520 @@
 ﻿@model TechXpress.Web.ViewModels.Products.ProductDetailsViewModel
 @using System.Security.Claims
 
-<!-- Product Details Section -->
-<div class="product-details">
-    <h1>@Model.Product.Name</h1>
-    <p><strong>Category:</strong> @Model.Product.Category?.Name</p>
-    <p><strong>Description:</strong> @Model.Product.Description</p>
-    <p><strong>Price:</strong> $@Model.Product.Price.ToString("0.00")</p>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/products">Products</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+					@Model.Product.Name
+                </li>
+            </ol>
+        </nav>
+<div class="container py-5">
+    <!-- Product Gallery & Details -->
+    <div class="row">
 
-    <!-- Product Rating -->
-    <div class="rating">
-        @for (int i = 0; i < 5; i++)
-        {
-            <i class="@(i < Model.AverageRating ? "fas" : "far") fa-star @(i < Model.AverageRating ? "text-warning" : "text-muted")"></i>
-        }
-        <span class="ms-2">(@Model.ReviewCount reviews)</span>
-    </div>
+        <!-- Product Gallery Slider -->
+        <div class="col-lg-6">
+            <div class="product-gallery">
+                <!-- Main Image Slider -->
+                <div class="swiper main-image-slider mb-3">
+                    <div class="swiper-wrapper">
+                        
+                            <div class="swiper-slide">
+                                <img src="@Model.Product.ImageUrl" class="img-fluid rounded" alt="@Model.Product.Name">
+                            </div>
+                        
+                    </div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+                
+                <!-- Thumbnail Slider -->
+                <div class="swiper thumbnail-slider">
+                    <div class="swiper-wrapper">
+                        @* @foreach (var image in Model.Product.Images) *@
+                        @* { *@
+                        @*     <div class="swiper-slide"> *@
+                        @*         <img src="@image.Url" class="img-thumbnail" alt="@Model.Product.Name"> *@
+                        @*     </div> *@
+                        @* } *@
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <!-- Add to Cart -->
-    <form asp-action="AddToCart" method="post">
-        <input type="hidden" name="productId" value="@Model.Product.Id" />
-        <button type="submit" class="btn btn-primary">Add to Cart</button>
-    </form>
-</div>
-
-<!-- Reviews Section -->
-<div class="tab-pane fade show active" id="reviews" role="tabpanel">
-    @if (Model?.Reviews != null && Model.Reviews.Any())
-    {
-        foreach (var review in Model.Reviews)
-        {
-            <div class="review mb-4">
-                <div class="review-header d-flex justify-content-between align-items-center">
-                    <h5>
-                        @(string.IsNullOrEmpty(review.User?.FirstName) || string.IsNullOrEmpty(review.User?.LastName)
-                            ? "Unknown User"
-                            : review.User.FirstName + " " + review.User.LastName)
-                    </h5>
-                    <div class="rating">
+        <!-- Product Details -->
+        <div class="col-lg-6">
+            <div class="product-details">
+                <h1 class="mb-3">@Model.Product.Name</h1>
+                
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rating me-3">
                         @for (int i = 0; i < 5; i++)
                         {
-                            <i class="@(i < review.Rating ? "fas" : "far") fa-star @(i < review.Rating ? "text-warning" : "text-muted")"></i>
+                            <i class="@(i < Model.AverageRating ? "fas" : "far") fa-star @(i < Model.AverageRating ? "text-warning" : "text-muted")"></i>
                         }
+                        <span class="ms-2">(@Model.ReviewCount reviews)</span>
                     </div>
-                    @if (User.Identity != null && User.Identity.IsAuthenticated && User.FindFirstValue(ClaimTypes.NameIdentifier) == review.UserId)
+                    <span class="badge bg-success">In Stock</span>
+                </div>
+
+                <div class="price-section mb-4">
+                    <h3 class="text-primary">$@Model.Product.Price.ToString("0.00")</h3>
+                    @if (Model.Product.Price > 0)
                     {
-                        <form asp-action="DeleteReview" method="post" class="ms-3">
-                            <input type="hidden" name="id" value="@review.Id" />
-                            <input type="hidden" name="productId" value="@Model.Product.Id" />
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                Delete
-                                <i class="fas fa-trash"></i>
+                        <del class="text-muted">$@Model.Product.Price.ToString("0.00")</del>
+                        <span class="badge bg-danger ms-2">((int)(100 - (Model.Product.Price / Model.Product.OldPrice * 100))% OFF</span>
+                    }
+                </div>
+
+                <p class="mb-4">@Model.Product.Description</p>
+
+                <div class="specifications mb-4">
+                    <h5>Specifications</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>Category:</strong> @Model.Product.Category?.Name</li>
+                        <li><strong>SKU:</strong> @Model.Product.SKU</li>
+                        
+                    </ul>
+                </div>
+
+                <form asp-action="AddToCart" method="post" class="mb-4">
+                    <input type="hidden" name="productId" value="@Model.Product.Id" />
+                    <div class="row align-items-center">
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <div class="input-group">
+                                <button type="button" class="btn btn-outline-secondary quantity-minus">-</button>
+                                <input type="number" name="quantity" value="1" min="1" class="form-control text-center quantity-input">
+                                <button type="button" class="btn btn-outline-secondary quantity-plus">+</button>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-shopping-cart me-2"></i> Add to Cart
                             </button>
-                        </form>
-                    }
-                </div>
+                        </div>
+                    </div>
+                </form>
 
-                <div class="review-date text-muted small mb-2">
-                    @review.CreatedAt.ToString("MMMM dd, yyyy")
-                    @if (review.UpdatedAt.HasValue)
-                    {
-                        <span class="text-muted">(edited)</span>
-                    }
+                <div class="product-actions d-flex gap-2">
+                    <button class="btn btn-outline-secondary">
+                        <i class="far fa-heart me-2"></i> Wishlist
+                    </button>
+                    <button class="btn btn-outline-secondary">
+                        <i class="fas fa-share-alt me-2"></i> Share
+                    </button>
                 </div>
-                <p>@review.Comment</p>
             </div>
-        }
-    }
-    else
-    {
-        <div class="alert alert-info">
-            No reviews yet. Be the first to review!
         </div>
-    }
+    </div>
 
-    @if (User.Identity != null && User.Identity.IsAuthenticated)
-    {
-        <!-- Review Submission Form -->
-        <form asp-action="AddReview" method="post">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="ProductId" value="@Model.Product.Id" />
-            <input type="hidden" name="UserId" value="@User.FindFirstValue(ClaimTypes.NameIdentifier)" />
-
-            <div class="mb-3">
-                <label for="Rating" class="form-label">Rating</label>
-                <div class="rating-input">
-                    @for (int i = 1; i <= 5; i++)
-                    {
-                        <input type="radio" asp-for="@Model.NewReview.Rating" value="@i" id="rating-@i" name="Rating" />
-                        <label for="rating-@i" class="star-rating">
-                            <i class="far fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </label>
-                    }
+    <!-- Product Tabs -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab">Description</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications" type="button" role="tab">Specifications</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">Reviews (@Model.ReviewCount)</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content p-3 border border-top-0 rounded-bottom" id="productTabsContent">
+                <!-- Description Tab -->
+                <div class="tab-pane fade show active" id="description" role="tabpanel">
+                    <div class="product-description">
+                        @Html.Raw(Model.Product.Description)
+                    </div>
                 </div>
 
-                <span class="text-danger" asp-validation-for="@Model.NewReview.Rating"></span>
-            </div>
+                <!-- Specifications Tab -->
+                <div class="tab-pane fade" id="specifications" role="tabpanel">
+                    <table class="table table-striped">
+                        <tbody>
+                            @if (Model.Product.Specifications != null && Model.Product.Specifications.Any())
+                            {
+                                foreach (var spec in Model.Product.Specifications)
+                                {
+                                    <tr>
+                                        <th scope="row">@spec.Key</th>
+                                        <td>@spec.Value</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="2" class="text-muted text-center">No specifications available.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="mb-3">
-                <label for="Comment" class="form-label">Comment</label>
-                <textarea name="Comment" class="form-control" rows="4" placeholder="Write your review here..."></textarea>
-                <span class="text-danger" asp-validation-for="@Model.NewReview.Comment"></span>
-            </div>
 
-            <button type="submit" class="btn btn-success">Submit Review</button>
-        </form>
-    }
-    else
+                
+                <!-- Reviews Tab -->
+                <div class="tab-pane fade" id="reviews" role="tabpanel">
+                    @if (Model?.Reviews != null && Model.Reviews.Any())
+                    {
+                        <div class="reviews-list">
+                            @foreach (var review in Model.Reviews)
+                            {
+                                <div class="review mb-4 p-3 border rounded">
+                                    <div class="review-header d-flex justify-content-between align-items-center mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar me-3">
+                                                <i class="fas fa-user-circle fa-2x text-secondary"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-0">
+                                                    @(string.IsNullOrEmpty(review.User?.FirstName) || string.IsNullOrEmpty(review.User?.LastName)
+                                                        ? "Anonymous"
+                                                        : review.User.FirstName + " " + review.User.LastName)
+                                                </h5>
+                                                <div class="rating">
+                                                    @for (int i = 0; i < 5; i++)
+                                                    {
+                                                        <i class="@(i < review.Rating ? "fas" : "far") fa-star @(i < review.Rating ? "text-warning" : "text-muted")"></i>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @if (User.Identity != null && User.Identity.IsAuthenticated && User.FindFirstValue(ClaimTypes.NameIdentifier) == review.UserId)
+                                        {
+                                            <form asp-action="DeleteReview" method="post">
+                                                <input type="hidden" name="id" value="@review.Id" />
+                                                <input type="hidden" name="productId" value="@Model.Product.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+
+                                    <div class="review-date text-muted small mb-2">
+                                        @review.CreatedAt.ToString("MMMM dd, yyyy")
+                                        @if (review.UpdatedAt.HasValue)
+                                        {
+                                            <span class="text-muted">(edited)</span>
+                                        }
+                                    </div>
+                                    <p class="mb-0">@review.Comment</p>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            No reviews yet. Be the first to review!
+                        </div>
+                    }
+
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        <div class="review-form mt-5">
+                            <h4>Write a Review</h4>
+                            <!-- Review Submission Form -->
+                            <form asp-action="AddReview" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="ProductId" value="@Model.Product.Id" />
+                                <input type="hidden" name="UserId" value="@User.FindFirstValue(ClaimTypes.NameIdentifier)" />
+
+                                <div class="mb-3">
+                                    <label for="Rating" class="form-label">Rating</label>
+                                    <div class="rating-input">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <input type="radio" asp-for="@Model.NewReview.Rating" value="@i" id="rating-@i" name="Rating" />
+                                            <label for="rating-@i" class="star-rating">
+                                                <i class="far fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                            </label>
+                                        }
+                                    </div>
+
+                                    <span class="text-danger" asp-validation-for="@Model.NewReview.Rating"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="Comment" class="form-label">Comment</label>
+                                    <textarea name="Comment" class="form-control" rows="4" placeholder="Write your review here..."></textarea>
+                                    <span class="text-danger" asp-validation-for="@Model.NewReview.Comment"></span>
+                                </div>
+
+                                <button type="submit" class="btn btn-success">Submit Review</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            Please <a asp-controller="Account" asp-action="Login" class="alert-link">login</a> to leave a review.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Similar Products Slider -->
+    @if (Model.SimilarProducts != null && Model.SimilarProducts.Any())
     {
-        <div class="alert alert-info">
-            Please <a asp-controller="Account" asp-action="Login">login</a> to leave a review.
+        <div class="similar-products mt-5">
+            <h3 class="mb-4">You May Also Like</h3>
+            <div class="swiper similar-products-slider">
+                <div class="swiper-wrapper">
+                    @foreach (var similarProduct in Model.SimilarProducts)
+                    {
+                        <div class="swiper-slide">
+                            <div class="card h-100">
+                                <div class="badge-container position-absolute top-0 start-0 p-2">
+                                    @if (similarProduct.IsFeatured)
+                                    {
+                                        <span class="badge bg-danger">Featured</span>
+                                    }
+                                    @if (similarProduct.CreatedDate > DateTime.Now.AddDays(-7))
+                                    {
+                                        <span class="badge bg-success ms-1">New</span>
+                                    }
+                                </div>
+                                <img src="@similarProduct.ImageUrl" class="card-img-top" alt="@similarProduct.Name">
+                                <div class="card-body">
+                                    <h5 class="card-title">@similarProduct.Name</h5>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-primary fw-bold">$@similarProduct.Price.ToString("0.00")</span>
+                                        @if (similarProduct.Reviews.Any())
+                                        {
+                                            <div class="text-warning">
+                                                @for (int i = 0; i < (int)similarProduct.Reviews.Average(r => r.Rating); i++)
+                                                {
+                                                    <i class="fas fa-star"></i>
+                                                }
+                                                <small>(@similarProduct.Reviews.Count())</small>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a href="@Url.Action("Details", "Products", new { id = similarProduct.Id })" class="btn btn-primary btn-sm w-100">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
         </div>
     }
 </div>
 
-<!-- Similar Products Section -->
-@if (Model.SimilarProducts != null && Model.SimilarProducts.Any())
-{
-    <div class="similar-products mt-5">
-        <h3>Similar Products</h3>
-        <div class="row">
-            @foreach (var similarProduct in Model.SimilarProducts)
-            {
-                <div class="col-md-3">
-                    <div class="card">
-                        <img src="/@similarProduct.ImageUrl" class="card-img-top" alt="@similarProduct.Name" />
-                        <div class="card-body">
-                            <h5 class="card-title">@similarProduct.Name</h5>
-                            <p class="card-text">$@similarProduct.Price.ToString("0.00")</p>
-                            <a href="@Url.Action("Details", "Products", new { id = similarProduct.Id })" class="btn btn-primary">View Details</a>
-                        </div>
-                    </div>
-                </div>
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/swiper@8/swiper-bundle.min.css" />
+    <style>
+        .product-gallery {
+            position: relative;
+        }
+        
+        .main-image-slider .swiper-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 400px;
+            overflow: hidden;
+        }
+        
+        .main-image-slider img {
+            max-height: 100%;
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        
+        .thumbnail-slider {
+            padding: 10px 0;
+        }
+        
+        .thumbnail-slider .swiper-slide {
+            width: 80px;
+            opacity: 0.6;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        
+        .thumbnail-slider .swiper-slide-thumb-active {
+            opacity: 1;
+            border-color: #0d6efd;
+        }
+        
+        .thumbnail-slider img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+        }
+        
+        .similar-products-slider .swiper-slide {
+            height: auto;
+        }
+
+        /* Rating Stars */
+        .rating {
+            display: inline-block;
+        }
+
+            .rating i {
+                font-size: 1.5rem;
+                color: #ffdd00;
             }
-        </div>
-    </div>
+
+                .rating i.text-muted {
+                    color: #d1d1d1;
+                }
+
+        /* Rating Form */
+        .rating-input input {
+            display: none;
+        }
+
+        .rating-input label {
+            display: inline-block;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .star-rating {
+            font-size: 1.8rem;
+            color: #d1d1d1;
+        }
+
+            .star-rating i {
+                pointer-events: none;
+            }
+
+        /* Hover Effect for Rating Stars */
+        .rating-input input:checked ~ label,
+        .rating-input input:hover ~ label {
+            color: #ffdd00;
+        }
+
+        /* Reviews Section */
+        .review-header {
+            margin-bottom: 10px;
+        }
+
+        .review-date {
+            font-size: 0.85rem;
+        }
+        
+        .quantity-input {
+            max-width: 50px;
+        }
+        
+        .quantity-minus, .quantity-plus {
+            width: 40px;
+        }
+    </style>
 }
 
+@section Scripts {
+    <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize main image slider
+            const mainImageSlider = new Swiper('.main-image-slider', {
+                loop: true,
+                spaceBetween: 10,
+                navigation: {
+                    nextEl: '.main-image-slider .swiper-button-next',
+                    prevEl: '.main-image-slider .swiper-button-prev',
+                },
+            });
+            
+            // Initialize thumbnail slider
+            const thumbnailSlider = new Swiper('.thumbnail-slider', {
+                loop: true,
+                spaceBetween: 10,
+                slidesPerView: 5,
+                freeMode: true,
+                watchSlidesProgress: true,
+            });
+            
+            // Connect main slider with thumbnails
+            mainImageSlider.controller.control = thumbnailSlider;
+            thumbnailSlider.controller.control = mainImageSlider;
+            
+            // Initialize similar products slider
+            const similarProductsSlider = new Swiper('.similar-products-slider', {
+                slidesPerView: 1,
+                spaceBetween: 20,
+                navigation: {
+                    nextEl: '.similar-products-slider .swiper-button-next',
+                    prevEl: '.similar-products-slider .swiper-button-prev',
+                },
+                breakpoints: {
+                    576: {
+                        slidesPerView: 2,
+                    },
+                    768: {
+                        slidesPerView: 3,
+                    },
+                    992: {
+                        slidesPerView: 4,
+                    }
+                }
+            });
+            
+            // Quantity controls
+            $('.quantity-plus').click(function() {
+                const input = $(this).siblings('.quantity-input');
+                input.val(parseInt(input.val()) + 1);
+            });
+            
+            $('.quantity-minus').click(function() {
+                const input = $(this).siblings('.quantity-input');
+                const value = parseInt(input.val());
+                if (value > 1) {
+                    input.val(value - 1);
+                }
+            });
 
+                  document.addEventListener("DOMContentLoaded", function () {
+            // Initialize the star ratings for each review
+            const ratings = document.querySelectorAll('.rating');
+            ratings.forEach(rating => {
+                const stars = rating.querySelectorAll('i');
+                stars.forEach(star => {
+                    star.addEventListener('mouseover', function () {
+                        stars.forEach(star => star.classList.add('hover'));
+                    });
 
+                    star.addEventListener('mouseout', function () {
+                        stars.forEach(star => star.classList.remove('hover'));
+                    });
+                });
+            });
 
-<style>
-   
-</style>
+            // Handle Rating Slider for Review Submission
+            const ratingInputs = document.querySelectorAll('.rating-input input');
+            ratingInputs.forEach(input => {
+                input.addEventListener('change', function () {
+                    const selectedRating = this.value;
+                    // Perform any other actions (e.g., dynamically updating UI)
+                });
+            });
+        });
+
+        });
+    </script>
+}

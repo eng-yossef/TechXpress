@@ -52,6 +52,14 @@ namespace TechXpress.Data.Models
         [ForeignKey("CategoryId")]
         public virtual Category Category { get; set; }
 
+
+
+        public virtual ICollection<ProductSpecification>? Specifications { get; set; }
+
+
+
+
+
         public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
         public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();

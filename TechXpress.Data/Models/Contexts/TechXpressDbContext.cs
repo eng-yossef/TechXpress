@@ -16,6 +16,8 @@ namespace TechXpress.Data.Models.Contexts
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Payment> Payments { get; set; }
+
+        public DbSet<ProductSpecification> ProductSpecification { get; set; }
         // public DbSet<AdminLog> AdminLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
