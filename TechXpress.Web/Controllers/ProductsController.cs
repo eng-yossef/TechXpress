@@ -180,23 +180,36 @@ namespace TechXpress.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> SearchSuggestions(string term)
         {
-            if (string.IsNullOrWhiteSpace(term))
+            try
             {
-                return Json(Enumerable.Empty<string>());
+                if (string.IsNullOrWhiteSpace(term) || term.Length < 2)
+                {
+                    return Json(new { success = false, message = "Minimum 2 characters required" });
+                }
+
+                var suggestions = await _productService.GetFilteredAsync(
+                    filter: p => p.Name.Contains(term) || (p.Category != null && p.Category.Name.Contains(term)),
+                    take: 5);
+
+                return Json(new
+                {
+                    success = true,
+                    results = suggestions.Select(p => new
+                    {
+                        id = p.Id,
+                        name = p.Name,
+                        category = p.Category?.Name ?? "Uncategorized",
+                        image = p.ImageUrl ?? "/images/default-product.png"
+                    })
+                });
             }
-
-            var suggestions = await _productService.GetFilteredAsync(
-                filter: p => p.Name.Contains(term) || p.Category.Name.Contains(term),
-                take: 5);
-
-            return Json(suggestions.Select(p => new
+            catch (Exception ex)
             {
-                id = p.Id,
-                name = p.Name,
-                category = p.Category.Name,
-                image = p.ImageUrl
-            }));
+                //_logger.LogError(ex, "Error in SearchSuggestions");
+                return StatusCode(500, new { success = false, message = "An error occurred" });
+            }
         }
+
 
 
 
