@@ -10,7 +10,7 @@ using TechXpress.Data.Repositories.GenericRepository;
 
 namespace TechXpress.Data.Repositories.ProductRepo
 {
-    public class ProductRepository : GenericRepository<Product>, IProductRepository
+    public class ProductRepository : GenericRepository<ProductViewModel>, IProductRepository
     {
         public ProductRepository(TechXpressDbContext context) : base(context)
         {
@@ -21,7 +21,7 @@ namespace TechXpress.Data.Repositories.ProductRepo
             return "Product Repository is operational";
         }
 
-        public async Task<IEnumerable<Product>> GetProductsWithCategoryAsync()
+        public async Task<IEnumerable<ProductViewModel>> GetProductsWithCategoryAsync()
         {
             return await _context.Products
                 .Include(p => p.Category)
@@ -29,14 +29,14 @@ namespace TechXpress.Data.Repositories.ProductRepo
                 .ToListAsync();
         }
 
-        public async Task<Product> GetProductWithCategoryAsync(int id)
+        public async Task<ProductViewModel> GetProductWithCategoryAsync(int id)
         {
             return await _context.Products
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<IEnumerable<Product>> GetFeaturedProductsAsync(int count)
+        public async Task<IEnumerable<ProductViewModel>> GetFeaturedProductsAsync(int count)
         {
             return await _context.Products
                 .Where(p => p.IsFeatured)
@@ -46,7 +46,7 @@ namespace TechXpress.Data.Repositories.ProductRepo
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId)
+        public async Task<IEnumerable<ProductViewModel>> GetProductsByCategoryAsync(int categoryId)
         {
             return await _context.Products
                 .Where(p => p.CategoryId == categoryId)
@@ -54,7 +54,7 @@ namespace TechXpress.Data.Repositories.ProductRepo
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> SearchProductsAsync(string searchTerm)
+        public async Task<IEnumerable<ProductViewModel>> SearchProductsAsync(string searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return await GetProductsWithCategoryAsync();
@@ -78,7 +78,7 @@ namespace TechXpress.Data.Repositories.ProductRepo
             }
         }
 
-        public async Task<IEnumerable<Product>> GetProductsByIdsAsync(IEnumerable<int> productIds)
+        public async Task<IEnumerable<ProductViewModel>> GetProductsByIdsAsync(IEnumerable<int> productIds)
         {
             return await _context.Products
                 .Where(p => productIds.Contains(p.Id))
@@ -86,14 +86,14 @@ namespace TechXpress.Data.Repositories.ProductRepo
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetFilteredProductsAsync(
-            Expression<Func<Product, bool>> filter = null,
-            Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy = null,
+        public async Task<IEnumerable<ProductViewModel>> GetFilteredProductsAsync(
+            Expression<Func<ProductViewModel, bool>> filter = null,
+            Func<IQueryable<ProductViewModel>, IOrderedQueryable<ProductViewModel>> orderBy = null,
             string includeProperties = "",
             int? skip = null,
             int? take = null)
         {
-            IQueryable<Product> query = _context.Products;
+            IQueryable<ProductViewModel> query = _context.Products;
 
             if (filter != null)
             {

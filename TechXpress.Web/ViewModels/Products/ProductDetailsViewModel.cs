@@ -5,8 +5,8 @@ namespace TechXpress.Web.ViewModels.Products
 {
     public class ProductDetailsViewModel
     {
-        public Product Product { get; set; }
-        public IEnumerable<Product> SimilarProducts { get; set; }
+        public Data.Models.ProductViewModel Product { get; set; }
+        public IEnumerable<Data.Models.ProductViewModel> SimilarProducts { get; set; }
         public IEnumerable<ReviewViewModel> Reviews { get; set; }
         public double AverageRating { get; set; }
         public int ReviewCount { get; set; }

@@ -9,9 +9,9 @@ namespace TechXpress.Web.ViewModels.Products
     public class ProductIndexViewModel
     {
         // Core listing data
-        public IPagedList<Product> Products { get; set; }
+        public IPagedList<Data.Models.ProductViewModel> Products { get; set; }
         public IEnumerable<Category> Categories { get; set; }
-        public IEnumerable<Product> RecommendedProducts { get; set; }
+        public IEnumerable<Data.Models.ProductViewModel> RecommendedProducts { get; set; }
 
         // Filtering parameters
         public int? SelectedCategoryId { get; set; }
@@ -69,7 +69,7 @@ namespace TechXpress.Web.ViewModels.Products
             return string.Equals(SortOrder, sortValue, StringComparison.OrdinalIgnoreCase);
         }
 
-        public Expression<Func<Product, bool>> BuildFilterExpression()
+        public Expression<Func<Data.Models.ProductViewModel, bool>> BuildFilterExpression()
         {
             return p =>
                 (SelectedCategoryId == null || p.CategoryId == SelectedCategoryId) &&
@@ -84,7 +84,7 @@ namespace TechXpress.Web.ViewModels.Products
                 (!IsFeatured || p.IsFeatured);
         }
 
-        public Func<IQueryable<Product>, IOrderedQueryable<Product>> BuildSortFunction()
+        public Func<IQueryable<Data.Models.ProductViewModel>, IOrderedQueryable<Data.Models.ProductViewModel>> BuildSortFunction()
         {
             return SortOrder switch
             {

@@ -7,26 +7,26 @@ using TechXpress.Services.GenericServices;
 
 namespace TechXpress.Services.ProductsService
 {
-    public interface IProductService : IGenericService<Product>
+    public interface IProductService : IGenericService<ProductViewModel>
     {
         Task<string> Test();
 
         // Product-specific operations
-        Task<IEnumerable<Product>> GetFeaturedProductsAsync(int count);
+        Task<IEnumerable<ProductViewModel>> GetFeaturedProductsAsync(int count);
 
-        Task<Product> GetProductsWithCategoryAsync(int productId);
+        Task<ProductViewModel> GetProductsWithCategoryAsync(int productId);
 
-        Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId);
-        Task<IEnumerable<Product>> SearchProductsAsync(string searchTerm);
+        Task<IEnumerable<ProductViewModel>> GetProductsByCategoryAsync(int categoryId);
+        Task<IEnumerable<ProductViewModel>> SearchProductsAsync(string searchTerm);
         Task UpdateStockAsync(int productId, int quantityChange);
         Task<bool> IsProductInStockAsync(int productId);
         Task<decimal> GetProductPriceAsync(int productId);
         Task ApplyDiscountAsync(int productId, decimal discountPercentage);
 
         // Advanced filtering
-        Task<IEnumerable<Product>> GetFilteredProductsAsync(
-            Expression<Func<Product, bool>> filter = null,
-            Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy = null,
+        Task<IEnumerable<ProductViewModel>> GetFilteredProductsAsync(
+            Expression<Func<ProductViewModel, bool>> filter = null,
+            Func<IQueryable<ProductViewModel>, IOrderedQueryable<ProductViewModel>> orderBy = null,
             string includeProperties = "",
             int? skip = null,
             int? take = null);

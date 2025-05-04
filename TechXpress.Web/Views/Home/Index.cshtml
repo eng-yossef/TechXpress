@@ -1,14 +1,23 @@
 ﻿@using TechXpress.Data.Models
-@model IEnumerable<Product>
+@model IEnumerable<ProductViewModel>
 @{
     ViewData["Title"] = "Home";
 }
 
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">
+            <i class="fas fa-home"></i> Home
+        </li>
+    </ol>
+</nav>
+
 <h2 class="mb-4">Featured Products</h2>
-<div class="row">
+
+<div class="featured-products-slider">
     @foreach (var product in Model)
     {
-        <div class="col-md-3 mb-4">
+        <div class="slider-item">
             <div class="card h-100 shadow-sm">
                 <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name">
                 <div class="card-body">
@@ -21,3 +30,74 @@
         </div>
     }
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
+    <style>
+        .featured-products-slider {
+            margin: 0 -10px;
+        }
+
+        .slider-item {
+            padding: 0 10px;
+        }
+
+        .slick-prev:before,
+        .slick-next:before {
+            color: #007bff;
+        }
+
+        .slick-dots li button:before {
+            font-size: 12px;
+        }
+
+        .card {
+            transition: transform 0.3s;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+            }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $('.featured-products-slider').slick({
+                dots: true,
+                infinite: true,
+                speed: 500,
+                slidesToShow: 4,
+                slidesToScroll: 1,
+                autoplay: true,
+                autoplaySpeed: 2000,
+                responsive: [
+                    {
+                        breakpoint: 992,
+                        settings: {
+                            slidesToShow: 3,
+                            slidesToScroll: 1
+                        }
+                    },
+                    {
+                        breakpoint: 768,
+                        settings: {
+                            slidesToShow: 2,
+                            slidesToScroll: 1
+                        }
+                    },
+                    {
+                        breakpoint: 576,
+                        settings: {
+                            slidesToShow: 1,
+                            slidesToScroll: 1
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
+}

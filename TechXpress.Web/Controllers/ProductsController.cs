@@ -44,7 +44,7 @@ namespace TechXpress.Web.Controllers
             int pageNumber = page ?? 1;
 
             // Build the filter expression
-            Expression<Func<Product, bool>> filter = p =>
+            Expression<Func<Data.Models.ProductViewModel, bool>> filter = p =>
                 (categoryId == null || p.CategoryId == categoryId) &&
                 (string.IsNullOrEmpty(searchTerm) ||
                  p.Name.Contains(searchTerm) ||
@@ -53,7 +53,7 @@ namespace TechXpress.Web.Controllers
                 (!maxPrice.HasValue || p.Price <= maxPrice.Value);
 
             // Determine sorting
-            Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy = null;
+            Func<IQueryable<Data.Models.ProductViewModel>, IOrderedQueryable<Data.Models.ProductViewModel>> orderBy = null;
             switch (sortOrder)
             {
                 case "price_asc":
@@ -85,7 +85,7 @@ namespace TechXpress.Web.Controllers
                     filter: p => p.CategoryId == categoryId && p.Id != categoryId,
                     orderBy: q => q.OrderByDescending(p => p.Reviews.Average(r => r.Rating)),
                     take: 3)
-                : Enumerable.Empty<Product>();
+                : Enumerable.Empty<Data.Models.ProductViewModel>();
 
             var viewModel = new ProductIndexViewModel
             {

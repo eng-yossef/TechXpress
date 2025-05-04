@@ -28,6 +28,6 @@ namespace TechXpress.Data.Models
         public virtual Order Order { get; set; }
 
         [ForeignKey("ProductId")]
-        public virtual Product Product { get; set; }
+        public virtual ProductViewModel Product { get; set; }
     }
 }

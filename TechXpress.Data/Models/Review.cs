@@ -33,7 +33,7 @@ namespace TechXpress.Data.Models
         public DateTime? UpdatedAt { get; set; }  // Added for tracking updates
 
         // Navigation properties
-        public virtual Product Product { get; set; }
+        public virtual ProductViewModel Product { get; set; }
         public virtual ApplicationUser User { get; set; }  // Added user navigation
     }
 }

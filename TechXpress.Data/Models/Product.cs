@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TechXpress.Data.Models
 {
-    public class Product
+    public class ProductViewModel
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -32,6 +32,12 @@ namespace TechXpress.Data.Models
         [Url]
         [StringLength(500)]
         public string? ImageUrl { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        //SKU
+        [StringLength(50)]
+        public string SKU { get; set; } = string.Empty;
 
         [Required]
         [DataType(DataType.DateTime)]

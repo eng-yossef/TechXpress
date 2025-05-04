@@ -12,7 +12,7 @@ using TechXpress.Services.GenericServices;
 
 namespace TechXpress.Services.ProductsService
 {
-    public class ProductService : GenericService<Product>, IProductService
+    public class ProductService : GenericService<ProductViewModel>, IProductService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IProductRepository _productRepository;
@@ -30,17 +30,17 @@ namespace TechXpress.Services.ProductsService
             return string.Join(", ", products.Select(p => p.Name)) + " | Product Service runs successfully.";
         }
 
-        public async Task<IEnumerable<Product>> GetFeaturedProductsAsync(int count)
+        public async Task<IEnumerable<ProductViewModel>> GetFeaturedProductsAsync(int count)
         {
             return await _productRepository.GetFeaturedProductsAsync(count);
         }
 
-        public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId)
+        public async Task<IEnumerable<ProductViewModel>> GetProductsByCategoryAsync(int categoryId)
         {
             return await _productRepository.GetProductsByCategoryAsync(categoryId);
         }
 
-        public async Task<IEnumerable<Product>> SearchProductsAsync(string searchTerm)
+        public async Task<IEnumerable<ProductViewModel>> SearchProductsAsync(string searchTerm)
         {
             return await _productRepository.SearchProductsAsync(searchTerm);
         }
@@ -67,9 +67,9 @@ namespace TechXpress.Services.ProductsService
             await _unitOfWork.CompleteAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetFilteredProductsAsync(
-            Expression<Func<Product, bool>> filter = null,
-            Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy = null,
+        public async Task<IEnumerable<ProductViewModel>> GetFilteredProductsAsync(
+            Expression<Func<ProductViewModel, bool>> filter = null,
+            Func<IQueryable<ProductViewModel>, IOrderedQueryable<ProductViewModel>> orderBy = null,
             string includeProperties = "",
             int? skip = null,
             int? take = null)
@@ -82,7 +82,7 @@ namespace TechXpress.Services.ProductsService
                 take);
         }
 
-        public async Task<Product> GetProductsWithCategoryAsync(int productId)
+        public async Task<ProductViewModel> GetProductsWithCategoryAsync(int productId)
         {
             var products = await _productRepository.GetProductsWithCategoryAsync();
             return products.FirstOrDefault(p => p.Id == productId);

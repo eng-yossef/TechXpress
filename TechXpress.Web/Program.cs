@@ -88,7 +88,11 @@ namespace TechXpress.Web
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+            // Add response caching services
+            builder.Services.AddResponseCaching();
 
+            // Use response caching middleware
+            app.UseResponseCaching();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

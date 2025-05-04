@@ -7,7 +7,6 @@
     <div class="card-body">
         <form id="filter-form" method="get">
             <input type="hidden" name="sortOrder" value="@Model.SortOrder" />
-
             <!-- Category Filter -->
             <div class="mb-3">
                 <h6>Categories</h6>
@@ -34,7 +33,6 @@
                     }
                 </div>
             </div>
-
             <!-- Price Range Filter -->
             <div class="mb-3">
                 <h6>Price Range</h6>
@@ -48,9 +46,32 @@
                     </div>
                 </div>
             </div>
-
-            <button type="submit" class="btn btn-primary btn-block">Apply Filters</button>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Apply Filters</button>
+                <a asp-action="Index" asp-route-sortOrder="@Model.SortOrder" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
         </form>
+
+        <script>
+            // Optional: Add JavaScript to enhance the clear functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const clearBtn = document.querySelector('.btn-outline-secondary');
+
+                // Add click handler if you want additional behavior beyond the link navigation
+                clearBtn.addEventListener('click', function(e) {
+                    e.preventDefault(); 
+
+                    Reset form fields programmatically if needed
+                    document.getElementById('min-price').value = '';
+                    document.getElementById('max-price').value = '';
+
+                    If you prevented default, you'd need to navigate manually:
+                    window.location.href = clearBtn.getAttribute('href');
+                });
+            });
+        </script>
     </div>
 </div>
 

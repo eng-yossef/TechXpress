@@ -8,7 +8,7 @@ namespace TechXpress.Data.Models.Contexts
     {
         public TechXpressDbContext(DbContextOptions<TechXpressDbContext> options) : base(options) { }
 
-        public DbSet<Product> Products { get; set; }
+        public DbSet<ProductViewModel> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
@@ -23,7 +23,7 @@ namespace TechXpress.Data.Models.Contexts
             base.OnModelCreating(modelBuilder);
 
             // Decimal precision
-            modelBuilder.Entity<Product>()
+            modelBuilder.Entity<ProductViewModel>()
                 .Property(p => p.Price)
                 .HasPrecision(18, 2);
 
@@ -108,7 +108,7 @@ namespace TechXpress.Data.Models.Contexts
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Product -> Category
-            modelBuilder.Entity<Product>()
+            modelBuilder.Entity<ProductViewModel>()
                 .HasOne(p => p.Category)
                 .WithMany(c => c.Products)
                 .HasForeignKey(p => p.CategoryId)

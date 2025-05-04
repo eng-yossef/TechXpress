@@ -84,13 +84,17 @@
 
             <div class="mb-3">
                 <label for="Rating" class="form-label">Rating</label>
-                <select name="Rating" class="form-select" required>
-                    <option value="">Select Rating</option>
+                <div class="rating-input">
                     @for (int i = 1; i <= 5; i++)
                     {
-                        <option value="@i">@i</option>
+                        <input type="radio" asp-for="@Model.NewReview.Rating" value="@i" id="rating-@i" name="Rating" />
+                        <label for="rating-@i" class="star-rating">
+                            <i class="far fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </label>
                     }
-                </select>
+                </div>
+
                 <span class="text-danger" asp-validation-for="@Model.NewReview.Rating"></span>
             </div>
 
@@ -133,3 +137,10 @@
         </div>
     </div>
 }
+
+
+
+
+<style>
+   
+</style>

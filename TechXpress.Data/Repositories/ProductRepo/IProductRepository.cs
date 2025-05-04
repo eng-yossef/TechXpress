@@ -7,24 +7,24 @@ using TechXpress.Data.Repositories.GenericRepository;
 
 namespace TechXpress.Data.Repositories.ProductRepo
 {
-    public interface IProductRepository : IGenericRepository<Product>
+    public interface IProductRepository : IGenericRepository<ProductViewModel>
     {
         // Basic test method
         public string test();
 
         // Core product operations
-        Task<IEnumerable<Product>> GetProductsWithCategoryAsync();
-        Task<Product> GetProductWithCategoryAsync(int id);
-        Task<IEnumerable<Product>> GetFeaturedProductsAsync(int count);
-        Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId);
-        Task<IEnumerable<Product>> SearchProductsAsync(string searchTerm);
+        Task<IEnumerable<ProductViewModel>> GetProductsWithCategoryAsync();
+        Task<ProductViewModel> GetProductWithCategoryAsync(int id);
+        Task<IEnumerable<ProductViewModel>> GetFeaturedProductsAsync(int count);
+        Task<IEnumerable<ProductViewModel>> GetProductsByCategoryAsync(int categoryId);
+        Task<IEnumerable<ProductViewModel>> SearchProductsAsync(string searchTerm);
         Task UpdateStockAsync(int productId, int quantity);
-        Task<IEnumerable<Product>> GetProductsByIdsAsync(IEnumerable<int> productIds);
+        Task<IEnumerable<ProductViewModel>> GetProductsByIdsAsync(IEnumerable<int> productIds);
 
         // Advanced filtering
-        Task<IEnumerable<Product>> GetFilteredProductsAsync(
-            Expression<Func<Product, bool>> filter = null,
-            Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy = null,
+        Task<IEnumerable<ProductViewModel>> GetFilteredProductsAsync(
+            Expression<Func<ProductViewModel, bool>> filter = null,
+            Func<IQueryable<ProductViewModel>, IOrderedQueryable<ProductViewModel>> orderBy = null,
             string includeProperties = "",
             int? skip = null,
             int? take = null);
