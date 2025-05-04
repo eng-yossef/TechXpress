@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TechXpress.Web.styles.css" asp-append-version="true" />
@@ -88,8 +90,27 @@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 
     <script src="~/js/products.js" asp-append-version="true"></script>
+	<script>
+		$(function () {
+			// Initialize tooltips
+			$('[data-toggle="tooltip"]').tooltip();
+			// Initialize datepicker
+			$("#datepicker").datepicker();
+		});
+		// Toastr notifications
+		@if (TempData["SuccessMessage"] != null)
+		{
+			<text>toastr.success('@TempData["SuccessMessage"]');</text>
+		}
+		@if (TempData["ErrorMessage"] != null)
+		{
+			<text>toastr.error('@TempData["ErrorMessage"]');</text>
+		}
+        </script>
     @section Scripts {
         @{
             await Html.RenderPartialAsync("_ValidationScriptsPartial");
