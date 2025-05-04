@@ -162,7 +162,7 @@ namespace TechXpress.Web.Controllers
         {
             try
             {
-                var product = await _productService.GetByIdAsync(id);
+                var product = await _productService.GetProductsWithCategoryAsync(id);
                 if (product == null)
                 {
                     return NotFound();

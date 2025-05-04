@@ -69,6 +69,25 @@
                 </div>
             }
         </div>
+        <!-- Quick View Modal -->
+        <div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Product Quick View</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Content will be loaded via AJAX -->
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -89,12 +108,25 @@
             });
 
             // Quick View functionality
-            $(document).on('click', '.quick-view-btn', function() {
-                var productId = $(this).data('id');
-                $('#quickViewModal').modal('show');
-                $('#quickViewContent').load('@Url.Action("QuickView")/' + productId);
-            });
+            // $(document).on('click', '.quick-view-btn', function() {
+            //     var productId = $(this).data('id');
+            //     $('#quickViewModal').modal('show');
+            //     $('#quickViewContent').load('@Url.Action("QuickView")/' + productId);
+            // });
+             // Quick view modal
+            document.querySelectorAll('.quick-view-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    const quickViewModal = new bootstrap.Modal(document.getElementById('quickViewModal'));
 
+                    fetch(`/Products/QuickView/${productId}`)
+                        .then(response => response.text())
+                        .then(html => {
+                            document.querySelector('#quickViewModal .modal-body').innerHTML = html;
+                            quickViewModal.show();
+                        });
+                });
+            });
             // Real-time search with debounce
             var searchTimeout;
             $('#search-input').on('input', function() {

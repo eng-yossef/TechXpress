@@ -34,8 +34,9 @@
     </div>
     <div class="card-footer bg-transparent">
         <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary btn-block">View Details</a>
-        <button class="btn btn-outline-secondary btn-block quick-view-btn" data-id="@Model.Id">
-            Quick View
+        <button class="btn btn-sm btn-outline-secondary quick-view-btn" data-product-id="@Model.Id">
+            <i class="far fa-eye"></i>
         </button>
     </div>
 </div>
+

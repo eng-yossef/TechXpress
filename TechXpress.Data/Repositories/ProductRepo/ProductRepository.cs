@@ -26,6 +26,7 @@ namespace TechXpress.Data.Repositories.ProductRepo
             return await _context.Products
                 .Include(p => p.Category)
                 .Include(p=>p.Specifications)
+                .Include(P=>P.Reviews)
                 .AsNoTracking()
                 .ToListAsync();
         }
