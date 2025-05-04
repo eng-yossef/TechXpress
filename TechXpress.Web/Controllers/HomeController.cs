@@ -1,27 +1,39 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using TechXpress.Services.ProductsService;
 using TechXpress.Web.Models;
 
 namespace TechXpress.Web.Controllers
 {
+
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly IProductService _productService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IProductService productService)
         {
-            _logger = logger;
+            _productService = productService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
+        {
+            // Get featured or newest products to display on homepage
+            var featuredProducts = await _productService.GetFeaturedProductsAsync(5);
+            return View(featuredProducts);
+        }
+
+        public IActionResult About()
         {
             return View();
         }
 
-        public IActionResult display()
+        public IActionResult Contact()
         {
-            //Names Service
+            return View();
+        }
 
+        public IActionResult Privacy()
+        {
             return View();
         }
 
@@ -30,6 +42,6 @@ namespace TechXpress.Web.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-
     }
+
 }

@@ -151,5 +151,11 @@ namespace TechXpress.Services.ShoppingCartsService
             await _unitOfWork.CompleteAsync();
             return newCart;
         }
+
+        public async Task<int> GetCartItemCountAsync(int cartId)
+        {
+            var cart = await GetCartWithItemsAsync(cartId);
+            return cart?.Items?.Sum(item => item.Quantity) ?? 0;
+        }
     }
 }

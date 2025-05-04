@@ -1,0 +1,76 @@
+﻿@model TechXpress.Web.ViewModels.Products.ProductIndexViewModel
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5>Filters</h5>
+    </div>
+    <div class="card-body">
+        <form id="filter-form" method="get">
+            <input type="hidden" name="sortOrder" value="@Model.SortOrder" />
+
+            <!-- Category Filter -->
+            <div class="mb-3">
+                <h6>Categories</h6>
+                <div class="list-group">
+                    <a asp-action="Index"
+                       asp-route-searchTerm="@Model.SearchTerm"
+                       asp-route-sortOrder="@Model.SortOrder"
+                       asp-route-minPrice="@Model.MinPrice"
+                       asp-route-maxPrice="@Model.MaxPrice"
+                       class="list-group-item list-group-item-action @(Model.SelectedCategoryId == null ? "active" : "")">
+                        All Categories
+                    </a>
+                    @foreach (var category in Model.Categories)
+                    {
+                        <a asp-action="Index"
+                           asp-route-categoryId="@category.Id"
+                           asp-route-searchTerm="@Model.SearchTerm"
+                           asp-route-sortOrder="@Model.SortOrder"
+                           asp-route-minPrice="@Model.MinPrice"
+                           asp-route-maxPrice="@Model.MaxPrice"
+                           class="list-group-item list-group-item-action @(Model.SelectedCategoryId == category.Id ? "active" : "")">
+                            @category.Name
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <!-- Price Range Filter -->
+            <div class="mb-3">
+                <h6>Price Range</h6>
+                <div id="price-range" class="mb-2"></div>
+                <div class="row">
+                    <div class="col">
+                        <input type="number" id="min-price" class="form-control" name="minPrice" placeholder="Min" value="@Model.MinPrice" />
+                    </div>
+                    <div class="col">
+                        <input type="number" id="max-price" class="form-control" name="maxPrice" placeholder="Max" value="@Model.MaxPrice" />
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Apply Filters</button>
+        </form>
+    </div>
+</div>
+
+@if (Model.RecommendedProducts.Any())
+{
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5>Recommended</h5>
+        </div>
+        <div class="card-body">
+            @foreach (var product in Model.RecommendedProducts)
+            {
+                <div class="mb-3">
+                    <a asp-action="Details" asp-route-id="@product.Id">
+                        <img src="@product.ImageUrl" class="img-fluid" alt="@product.Name" />
+                        <h6>@product.Name</h6>
+                        <p class="text-primary">@product.Price.ToString("C")</p>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+}

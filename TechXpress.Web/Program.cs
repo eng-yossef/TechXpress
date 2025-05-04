@@ -18,6 +18,7 @@ using TechXpress.Services.ReviewsService;
 using TechXpress.Services.OrdersDetailsService;
 using TechXpress.Services.ShoppingCartsService;
 using TechXpress.Data.Repositories.ShoppingCartRepo;
+using TechXpress.Web.Filters;
 
 namespace TechXpress.Web
 {
@@ -69,6 +70,10 @@ namespace TechXpress.Web
             builder.Services.AddScoped<IOrderDetailsService, OrderDetailsService>();
             builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
 
+            //Add filters 
+            builder.Services.AddScoped<UpdateCartItemCountFilter>();
+
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -83,6 +88,14 @@ namespace TechXpress.Web
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+            });
+
 
             app.MapControllerRoute(
                 name: "default",

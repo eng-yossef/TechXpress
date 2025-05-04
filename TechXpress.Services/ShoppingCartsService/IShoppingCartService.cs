@@ -17,6 +17,9 @@ namespace TechXpress.Services.ShoppingCartsService
         Task ClearCartAsync(int cartId);
         Task<bool> CartExistsForUserAsync(string userId);
 
+        Task<int> GetCartItemCountAsync(int cartId);
+
+
         // Item management
         Task AddItemToCartAsync(int cartId, int productId, int quantity = 1);
         Task RemoveItemFromCartAsync(int cartId, int productId);

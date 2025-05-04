@@ -20,3 +20,82 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Product Cards */
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #dee2e6;
+}
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+.badge-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
+}
+
+.badge-featured {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-new {
+    background-color: #28a745;
+    color: white;
+}
+
+/* Rating Stars */
+.rating {
+    color: #ffc107;
+}
+
+/* Price Range Slider */
+.ui-slider {
+    height: 6px;
+    background: #dee2e6;
+    border-radius: 3px;
+}
+
+.ui-slider-range {
+    background: #007bff;
+}
+
+.ui-slider-handle {
+    width: 16px;
+    height: 16px;
+    background: #007bff;
+    border-radius: 50%;
+    border: none;
+    top: -5px;
+    cursor: pointer;
+}
+
+/* Quick View Modal */
+#quickViewModal .modal-dialog {
+    max-width: 800px;
+}
+
+/* Product Tabs */
+.nav-tabs .nav-link.active {
+    font-weight: bold;
+    border-bottom: 3px solid #007bff;
+}
+
+/* Search Autocomplete */
+.ui-autocomplete {
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.search-thumbnail {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    margin-right: 10px;
+}

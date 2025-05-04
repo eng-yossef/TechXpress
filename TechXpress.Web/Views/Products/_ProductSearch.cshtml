@@ -1,0 +1,14 @@
+﻿@model TechXpress.Web.ViewModels.Products.ProductIndexViewModel
+
+<form asp-action="Index" method="get" class="mr-2">
+    <input type="hidden" name="categoryId" value="@Model.SelectedCategoryId" />
+    <input type="hidden" name="sortOrder" value="@Model.SortOrder" />
+    <div class="input-group">
+        <input type="text" class="form-control" name="searchTerm" value="@Model.SearchTerm" placeholder="Search..." id="search-input" />
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="submit">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+</form>

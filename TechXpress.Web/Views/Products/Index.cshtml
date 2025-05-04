@@ -1,28 +1,79 @@
-﻿<table id="myTable" class="display">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Position</th>
-            <th>Office</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>Tiger Nixon</td>
-            <td>System Architect</td>
-            <td>Edinburgh</td>
-        </tr>
-        <!-- more rows -->
-    </tbody>
-</table>
+﻿@model TechXpress.Web.ViewModels.Products.ProductIndexViewModel
 
-<!-- Include jQuery and DataTables -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+@{
+    ViewData["Title"] = "Products";
+}
 
-<script>
-    $(document).ready(function () {
-      $('#myTable').DataTable();
-    });
-</script>
+<div class="container mt-4">
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-md-3">
+            @await Html.PartialAsync("_ProductFilters", Model)
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Products</h2>
+                <div class="d-flex">
+                    @await Html.PartialAsync("_ProductSearch", Model)
+                    @await Html.PartialAsync("_ProductSort", Model)
+                </div>
+            </div>
+
+            @if (Model.Products.Any())
+            {
+                <div class="row">
+                    @foreach (var product in Model.Products)
+                    {
+                        <div class="col-md-4 mb-4">
+                            @await Html.PartialAsync("_ProductCard", product)
+                        </div>
+                    }
+                </div>
+
+                @await Html.PartialAsync("_Pagination", Model)
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    No products found matching your criteria.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function() {
+            // Initialize price range slider
+            $("#price-range").slider({
+                range: true,
+                min: 0,
+                max: 1000,
+                values: [@(Model.MinPrice ?? 0), @(Model.MaxPrice ?? 1000)],
+                slide: function(event, ui) {
+                    $("#min-price").val(ui.values[0]);
+                    $("#max-price").val(ui.values[1]);
+                }
+            });
+
+            // Quick View functionality
+            $(document).on('click', '.quick-view-btn', function() {
+                var productId = $(this).data('id');
+                $('#quickViewModal').modal('show');
+                $('#quickViewContent').load('@Url.Action("QuickView")/' + productId);
+            });
+
+            // Search autocomplete
+            $('#search-input').autocomplete({
+                source: '@Url.Action("SearchSuggestions")',
+                minLength: 2,
+                select: function(event, ui) {
+                    window.location.href = '@Url.Action("Details")/' + ui.item.id;
+                }
+            });
+        });
+    </script>
+}

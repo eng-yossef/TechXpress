@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -80,5 +81,16 @@ namespace TechXpress.Services.ProductsService
                 skip,
                 take);
         }
+
+        public async Task<Product> GetProductsWithCategoryAsync(int productId)
+        {
+            var products = await _productRepository.GetProductsWithCategoryAsync();
+            return products.FirstOrDefault(p => p.Id == productId);
+        }
+
+
+
+
+
     }
 }

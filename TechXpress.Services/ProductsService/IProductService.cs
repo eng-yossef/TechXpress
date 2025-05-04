@@ -13,6 +13,9 @@ namespace TechXpress.Services.ProductsService
 
         // Product-specific operations
         Task<IEnumerable<Product>> GetFeaturedProductsAsync(int count);
+
+        Task<Product> GetProductsWithCategoryAsync(int productId);
+
         Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId);
         Task<IEnumerable<Product>> SearchProductsAsync(string searchTerm);
         Task UpdateStockAsync(int productId, int quantityChange);
