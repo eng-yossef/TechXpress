@@ -15,6 +15,18 @@ namespace TechXpress.Data.Repositories.ShoppingCartRepo
         Task ClearCartAsync(int cartId);
         Task<bool> CartExistsForUserAsync(string userId);
 
+        //GetCartByIdAsync
+        Task<ShoppingCart> GetCartByIdAsync(string cartId, bool includeItems = false);
+
+        //GetUserCartAsync
+        Task<ShoppingCart> GetUserCartAsync(string userId, bool includeItems = false);
+
+        //CreateCartAsync
+        Task<ShoppingCart> CreateCartAsync(string userId = null);
+
+        //MergeGuestCartWithUserCartAsync
+        Task MergeGuestCartWithUserCartAsync(string userId, int guestCartId);
+
         // Additional methods for complete functionality
         Task<int> GetCartItemCountAsync(int cartId);
         Task MergeCartsAsync(int targetCartId, int sourceCartId);

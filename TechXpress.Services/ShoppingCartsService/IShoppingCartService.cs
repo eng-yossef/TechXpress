@@ -20,6 +20,13 @@ namespace TechXpress.Services.ShoppingCartsService
         Task<int> GetCartItemCountAsync(int cartId);
 
 
+
+        Task<ShoppingCart> GetCartByIdAsync(string cartId, bool includeItems = false);
+        Task<ShoppingCart> GetOrCreateUserCartAsync(string userId, bool includeItems = false);
+        Task MergeGuestCartWithUserCartAsync(string guestCartId, string userId);
+        Task<ShoppingCart> CreateGuestCartAsync();
+
+
         // Item management
         Task AddItemToCartAsync(int cartId, int productId, int quantity = 1);
         Task RemoveItemFromCartAsync(int cartId, int productId);

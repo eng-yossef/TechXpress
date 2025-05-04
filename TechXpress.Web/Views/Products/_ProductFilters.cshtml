@@ -77,21 +77,104 @@
 
 @if (Model.RecommendedProducts.Any())
 {
-    <div class="card">
-        <div class="card-header bg-info text-white">
-            <h5>Recommended</h5>
-        </div>
-        <div class="card-body">
-            @foreach (var product in Model.RecommendedProducts)
-            {
-                <div class="mb-3">
-                    <a asp-action="Details" asp-route-id="@product.Id">
-                        <img src="@product.ImageUrl" class="img-fluid" alt="@product.Name" />
-                        <h6>@product.Name</h6>
-                        <p class="text-primary">@product.Price.ToString("C")</p>
-                    </a>
+    <div class="featured-products-slider">
+        @foreach (var product in Model.RecommendedProducts)
+        {
+            <div class="slider-item">
+                <div class="card h-100 shadow-sm">
+                    <div class="ratio ratio-1x1">
+                        <img src="@product.ImageUrl" class="card-img-top img-fluid" alt="@product.Name" style="object-fit: contain;">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">@product.Name</h5>
+                        <p class="card-text text-primary"><strong>@product.Price.ToString("C")</strong></p>
+                        <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-outline-primary btn-sm">View Details</a>
+                    </div>
                 </div>
-            }
-        </div>
+            </div>
+        }
     </div>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
+    <style>
+        .featured-products-slider {
+            margin: 0 -10px;
+        }
+
+        .slider-item {
+            padding: 0 10px;
+            float: left; /* Important for horizontal layout */
+            height: auto;
+        }
+
+        .slick-slide {
+            float: left; /* Ensures horizontal layout */
+        }
+
+        .slick-list {
+            overflow: hidden; /* Prevents vertical scrolling */
+        }
+
+        .slick-prev:before,
+        .slick-next:before {
+            color: #007bff;
+        }
+
+        .slick-dots li button:before {
+            font-size: 12px;
+        }
+
+        .card {
+            transition: transform 0.3s;
+            height: 100%;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+            }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $('.featured-products-slider').slick({
+                dots: true,
+                infinite: true,
+                speed: 500,
+                slidesToShow: 4,
+                slidesToScroll: 1,
+                autoplay: true,
+                autoplaySpeed: 2000,
+                arrows: true,
+                responsive: [
+                    {
+                        breakpoint: 992,
+                        settings: {
+                            slidesToShow: 3,
+                            slidesToScroll: 1
+                        }
+                    },
+                    {
+                        breakpoint: 768,
+                        settings: {
+                            slidesToShow: 2,
+                            slidesToScroll: 1
+                        }
+                    },
+                    {
+                        breakpoint: 576,
+                        settings: {
+                            slidesToShow: 1,
+                            slidesToScroll: 1
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
 }

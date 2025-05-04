@@ -114,7 +114,7 @@
                     </div>
                 }
 
-                <form asp-action="AddToCart" method="post" class="mb-4">
+                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="mb-4">
                     <input type="hidden" name="productId" value="@Model.Product.Id" />
                     <div class="row align-items-center">
                         <div class="col-md-3 mb-3 mb-md-0">
@@ -122,7 +122,7 @@
                                 <button type="button" class="btn btn-outline-secondary quantity-minus">
                                     <i class="fas fa-minus"></i>
                                 </button>
-                                <input type="number" name="quantity" value="1" min="1" class="form-control text-center quantity-input">
+                                <input type="number" name="quantity" value="1" min="1" class="form-control text-center quantity-input" />
                                 <button type="button" class="btn btn-outline-secondary quantity-plus">
                                     <i class="fas fa-plus"></i>
                                 </button>
@@ -133,6 +133,7 @@
                                 <button type="submit" class="btn btn-primary flex-grow-1">
                                     <i class="fas fa-shopping-cart me-2"></i> Add to Cart
                                 </button>
+                                <!-- Buy Now can be wired later -->
                                 <button type="button" class="btn btn-outline-danger buy-now-btn">
                                     <i class="fas fa-bolt me-2"></i> Buy Now
                                 </button>
@@ -800,6 +801,25 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
         <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const minusBtn = document.querySelector('.quantity-minus');
+                const plusBtn = document.querySelector('.quantity-plus');
+                const quantityInput = document.querySelector('.quantity-input');
+
+                minusBtn.addEventListener('click', () => {
+                    let current = parseInt(quantityInput.value);
+                    if (current > 1) quantityInput.value = current - 1;
+                });
+
+                plusBtn.addEventListener('click', () => {
+                    let current = parseInt(quantityInput.value);
+                    quantityInput.value = current + 1;
+                });
+            });
+        </script>
 
     <script>
         $(document).ready(function(){

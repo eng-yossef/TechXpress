@@ -26,10 +26,45 @@ namespace TechXpress.Services.ShoppingCartsService
             _cartItemService = cartItemService;
         }
 
+
         public async Task<string> Test()
         {
             var sampleCart = await _shoppingCartRepository.GetWithItemsAsync(1);
             return $"ShoppingCart Service operational. Sample cart has {sampleCart?.Items.Count ?? 0} items";
+        }
+
+        public async Task<ShoppingCart> GetCartByIdAsync(string cartId, bool includeItems = false)
+        {
+            return await _unitOfWork.ShoppingCarts.GetCartByIdAsync(cartId, includeItems);
+        }
+
+        public async Task<ShoppingCart> GetOrCreateUserCartAsync(string userId, bool includeItems = false)
+        {
+            var cart = await _unitOfWork.ShoppingCarts.GetUserCartAsync(userId, includeItems);
+            if (cart == null)
+            {
+                cart = await _unitOfWork.ShoppingCarts.CreateCartAsync(userId);
+                await _unitOfWork.CompleteAsync(); // Save changes
+            }
+            return cart;
+        }
+
+        public async Task MergeGuestCartWithUserCartAsync(string guestCartId, string userId)
+        {
+            if (!int.TryParse(guestCartId, out var guestCartIdAsInt))
+            {
+                throw new ArgumentException("guestCartId must be a valid integer string.", nameof(guestCartId));
+            }
+
+            await _unitOfWork.ShoppingCarts.MergeGuestCartWithUserCartAsync(userId, guestCartIdAsInt);
+            await _unitOfWork.CompleteAsync();
+        }
+
+        public async Task<ShoppingCart> CreateGuestCartAsync()
+        {
+            var cart = await _unitOfWork.ShoppingCarts.CreateCartAsync();
+            await _unitOfWork.CompleteAsync();
+            return cart;
         }
 
         public async Task<ShoppingCart> GetCartByUserIdAsync(string userId)

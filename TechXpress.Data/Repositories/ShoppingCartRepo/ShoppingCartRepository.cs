@@ -24,6 +24,89 @@ namespace TechXpress.Data.Repositories.ShoppingCartRepo
                 .FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
+        public async Task<ShoppingCart> GetCartByIdAsync(string cartId, bool includeItems = false)
+        {
+            var query = _context.ShoppingCarts.AsQueryable();
+
+            if (includeItems)
+            {
+                query = query
+                    .Include(c => c.Items)
+                        .ThenInclude(i => i.Product);
+            }
+            int cartIdInt= int.Parse(cartId);
+
+            return await query.FirstOrDefaultAsync(c => c.Id == cartIdInt);
+        }
+
+        public async Task<ShoppingCart> GetUserCartAsync(string userId, bool includeItems = false)
+        {
+            var query = _context.ShoppingCarts
+                .Where(c => c.UserId == userId);
+
+            if (includeItems)
+            {
+                query = query
+                    .Include(c => c.Items)
+                        .ThenInclude(i => i.Product);
+            }
+
+            return await query.FirstOrDefaultAsync();
+        }
+
+
+        public async Task<ShoppingCart> CreateCartAsync(string userId = null)
+        {
+            var cart = new ShoppingCart
+            {
+                UserId = userId,
+            };
+
+            await _context.ShoppingCarts.AddAsync(cart);
+            return cart;
+        }
+
+        public async Task MergeGuestCartWithUserCartAsync( string userId, int guestCartId)
+        {
+            var guestCart = await _context.ShoppingCarts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.Id == guestCartId);
+
+            if (guestCart == null) return;
+
+            var userCart = await GetUserCartAsync(userId, includeItems: true);
+            if (userCart == null)
+            {
+                userCart = new ShoppingCart
+                {
+                    UserId = userId,
+                    Items = new List<CartItem>()
+                };
+                await _context.ShoppingCarts.AddAsync(userCart);
+            }
+
+            foreach (var guestItem in guestCart.Items)
+            {
+                var existingItem = userCart.Items.FirstOrDefault(i => i.ProductId == guestItem.ProductId);
+                if (existingItem != null)
+                {
+                    existingItem.Quantity += guestItem.Quantity;
+                }
+                else
+                {
+                    userCart.Items.Add(new CartItem
+                    {
+                        ProductId = guestItem.ProductId,
+                        Quantity = guestItem.Quantity,
+                        ShoppingCartId = userCart.Id
+                    });
+                }
+            }
+
+            // Remove guest cart  
+            _context.ShoppingCarts.Remove(guestCart);
+        }
+
         public async Task<ShoppingCart> GetWithItemsAsync(int cartId)
         {
             return await _context.Set<ShoppingCart>()
@@ -135,5 +218,7 @@ namespace TechXpress.Data.Repositories.ShoppingCartRepo
 
             return await query.ToListAsync();
         }
+
+      
     }
 }
