@@ -1,109 +1,454 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using TechXpress.Data.Models;
 using TechXpress.Services.CartItemsService;
 using TechXpress.Services.ShoppingCartsService;
 using TechXpress.Web.ViewModels;
+using Microsoft.Extensions.Logging;
+using TechXpress.Web.Extensions;
+//using TechXpress.Web.Extensions;
 
 namespace TechXpress.Web.Controllers
 {
+    [Route("cart")]
     public class CartController : Controller
     {
         private readonly IShoppingCartService _cartService;
         private readonly ICartItemService _cartItemService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<CartController> _logger;
 
         private const string SessionCartIdKey = "CartId";
 
         public CartController(
             IShoppingCartService cartService,
             ICartItemService cartItemService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<CartController> logger)
         {
             _cartService = cartService;
             _cartItemService = cartItemService;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
         // ---------------------------- Core Actions ----------------------------
 
+        [HttpGet("")]
         public async Task<IActionResult> Index()
         {
-            var cart = await GetOrCreateCartAsync(includeItems: true);
-            if (cart == null || cart.Items == null || !cart.Items.Any())
-                return View("Empty");
-
-            var cartViewModel = new CartViewModel
+            try
             {
-                CartId = cart.Id.ToString(),
-                Items = cart.Items.Select(item => new CartItemViewModel
+                var cart = await GetOrCreateCartAsync(includeItems: true);
+                if (cart == null || cart.Items == null || !cart.Items.Any())
+                    return View("Empty");
+
+                var cartViewModel = new CartViewModel
                 {
-                    ItemId = item.Id.ToString(),
-                    Quantity = item.Quantity,
-                    Product = new ProductViewModel
+                    CartId = cart.Id.ToString(),
+                    Items = cart.Items.Select(item => new CartItemViewModel
                     {
-                        Id = item.ProductId,
-                        Name = item.Product?.Name,
-                        ImageUrl = item.Product?.ImageUrl,
-                        Price = item.Product?.Price ?? 0m
-                    }
-                }).ToList()
-            };
+                        ItemId = item.Id.ToString(),
+                        Quantity = item.Quantity,
+                        Product = new ProductViewModel
+                        {
+                            Id = item.ProductId,
+                            Name = item.Product?.Name,
+                            ImageUrl = item.Product?.ImageUrl,
+                            Price = item.Product?.Price ?? 0m,
+                            StockQuantity = item.Product?.StockQuantity ?? 0
+                        },
+                        TotalPrice = (int)((item.Product?.Price ?? 0m) * item.Quantity)
+                    }).ToList(),
+                    Subtotal = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity),
+                    Tax = 0m, // Will be calculated
+                    Shipping = 0m, // Will be calculated
+                    Total = 0m // Will be calculated
+                };
 
-            return View(cartViewModel);
-        }
-        [HttpPost("AddToCart")]
-        public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
-        {
-            var cart = await GetOrCreateCartAsync();
-            await _cartService.AddItemToCartAsync(cart.Id, productId, quantity);
-            return RedirectToAction("Index");
+                // Calculate order totals
+                cartViewModel.Tax = cartViewModel.Subtotal * 0.1m; // Example 10% tax
+                cartViewModel.Shipping = cartViewModel.Subtotal > 50 ? 0m : 5.99m; // Free shipping over $50
+                cartViewModel.Total = cartViewModel.Subtotal + cartViewModel.Tax + cartViewModel.Shipping;
+
+                //ViewBag.CartItemCount
+                ViewBag.CartItemCount = cart.Items.Sum(item => item.Quantity);
+
+
+                return View(cartViewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading cart");
+                TempData["ErrorMessage"] = "There was an error loading your cart. Please try again.";
+                return View("Empty");
+            }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> UpdateQuantity(int productId, int quantity)
+        [HttpPost("add")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddToCart([FromForm] AddToCartRequest request)
         {
-            var cart = await GetOrCreateCartAsync();
-            await _cartService.UpdateItemQuantityAsync(cart.Id, productId, quantity);
-            return RedirectToAction("Index");
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var cart = await GetOrCreateCartAsync();
+                 await _cartService.AddItemToCartAsync(cart.Id, request.ProductId, request.Quantity);
+
+                if (Request.IsAjaxRequest())
+                {
+                    var cartSummary = await GetCartSummary();
+                    return Json(new
+                    {
+                        success = true,
+                        message = "Item added to cart",
+                        cartItemCount = cartSummary.ItemCount,
+                        cartSubtotal = cartSummary.Subtotal.ToCurrencyString()
+                    });
+                }
+
+                ViewBag.CartItemCount = cart.Items.Sum(item => item.Quantity);
+
+
+                TempData["SuccessMessage"] = "Item added to cart successfully";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding item to cart");
+
+                if (Request.IsAjaxRequest())
+                {
+                    return Json(new { success = false, message = "Error adding item to cart" });
+                }
+
+                TempData["ErrorMessage"] = "There was an error adding the item to your cart.";
+                return RedirectToAction("Index");
+            }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Remove(int productId)
+        [HttpPost("update")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateQuantity([FromForm] UpdateCartItemRequest request)
         {
-            var cart = await GetOrCreateCartAsync();
-            await _cartService.RemoveItemFromCartAsync(cart.Id, productId);
-            return RedirectToAction("Index");
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var cart = await GetOrCreateCartAsync();
+                await _cartService.UpdateItemQuantityAsync(cart.Id, request.ProductId, request.Quantity);
+
+                if (Request.IsAjaxRequest())
+                {
+                    var cartSummary = await GetCartSummary();
+                    var updatedItem = cartSummary.Items.FirstOrDefault(i => i.ProductId == request.ProductId);
+
+                    return Json(new
+                    {
+                        success = true,
+                        itemTotal = (updatedItem?.Price * updatedItem?.Quantity ?? 0).ToCurrencyString(),
+                        cartItemCount = cartSummary.ItemCount,
+                        cartSubtotal = cartSummary.Subtotal.ToCurrencyString(),
+                        cartTax = cartSummary.Tax.ToCurrencyString(),
+                        cartShipping = cartSummary.Shipping.ToCurrencyString(),
+                        cartTotal = cartSummary.Total.ToCurrencyString()
+                    });
+                }
+                ViewBag.CartItemCount = cart.Items.Sum(item => item.Quantity);
+
+                TempData["SuccessMessage"] = "Cart updated successfully";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating cart item quantity");
+
+                if (Request.IsAjaxRequest())
+                {
+                    return Json(new { success = false, message = "Error updating item quantity" });
+                }
+
+                TempData["ErrorMessage"] = "There was an error updating your cart.";
+                return RedirectToAction("Index");
+            }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Clear()
+        [HttpPost("remove")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveItem([FromForm] RemoveCartItemRequest request)
         {
-            var cart = await GetOrCreateCartAsync();
-            await _cartService.ClearCartAsync(cart.Id);
-            return RedirectToAction("Index");
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var cart = await GetOrCreateCartAsync();
+                await _cartService.RemoveItemFromCartAsync(cart.Id, request.ProductId);
+
+                if (Request.IsAjaxRequest())
+                {
+                    var cartSummary = await GetCartSummary();
+                    return Json(new
+                    {
+                        success = true,
+                        message = "Item removed from cart",
+                        cartItemCount = cartSummary.ItemCount,
+                        cartSubtotal = cartSummary.Subtotal.ToCurrencyString(),
+                        cartTax = cartSummary.Tax.ToCurrencyString(),
+                        cartShipping = cartSummary.Shipping.ToCurrencyString(),
+                        cartTotal = cartSummary.Total.ToCurrencyString()
+                    });
+                }
+
+                ViewBag.CartItemCount = cart.Items.Sum(item => item.Quantity);
+
+
+                TempData["SuccessMessage"] = "Item removed from cart successfully";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing item from cart");
+
+                if (Request.IsAjaxRequest())
+                {
+                    return Json(new { success = false, message = "Error removing item from cart" });
+                }
+
+                TempData["ErrorMessage"] = "There was an error removing the item from your cart.";
+                return RedirectToAction("Index");
+            }
         }
+
+        [HttpPost("clear")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ClearCart()
+        {
+            try
+            {
+                var cart = await GetOrCreateCartAsync();
+                await _cartService.ClearCartAsync(cart.Id);
+
+                if (Request.IsAjaxRequest())
+                {
+                    return Json(new { success = true, message = "Cart cleared successfully" });
+                }
+
+                ViewBag.CartItemCount = 0;
+
+                TempData["SuccessMessage"] = "Cart cleared successfully";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error clearing cart");
+
+                if (Request.IsAjaxRequest())
+                {
+                    return Json(new { success = false, message = "Error clearing cart" });
+                }
+
+                TempData["ErrorMessage"] = "There was an error clearing your cart.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpGet("summary")]
+        public async Task<IActionResult> GetCartSummaryPartial()
+        {
+            try
+            {
+                var cartSummary = await GetCartSummary();
+                return PartialView("_CartSummaryPartial", cartSummary);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading cart summary");
+                return PartialView("_CartSummaryPartial", new CartSummaryViewModel());
+            }
+        }
+
+        // ---------------------------- Checkout Process ----------------------------
+
+        [Authorize]
+        [HttpGet("checkout")]
+        public async Task<IActionResult> Checkout()
+        {
+            try
+            {
+                var cart = await GetOrCreateCartAsync(includeItems: true);
+                if (cart == null || cart.Items == null || !cart.Items.Any())
+                {
+                    TempData["ErrorMessage"] = "Your cart is empty";
+                    return RedirectToAction("Index");
+                }
+
+                // Check product availability
+                var unavailableItems = cart.Items.Where(item => item.Product?.StockQuantity < item.Quantity).ToList();
+                if (unavailableItems.Any())
+                {
+                    TempData["ErrorMessage"] = $"Some items in your cart are no longer available in the requested quantities: {string.Join(", ", unavailableItems.Select(i => i.Product?.Name))}";
+                    return RedirectToAction("Index");
+                }
+
+                var checkoutViewModel = new CheckoutViewModel
+                {
+                    Cart = new CartViewModel
+                    {
+                        CartId = cart.Id.ToString(),
+                        Items = cart.Items.Select(item => new CartItemViewModel
+                        {
+                            ItemId = item.Id.ToString(),
+                            Quantity = item.Quantity,
+                            Product = new ProductViewModel
+                            {
+                                Id = item.ProductId,
+                                Name = item.Product?.Name,
+                                ImageUrl = item.Product?.ImageUrl,
+                                Price = item.Product?.Price ?? 0m
+                            },
+                            TotalPrice = (int)((item.Product?.Price ?? 0m) * item.Quantity)
+                        }).ToList(),
+                        Subtotal = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity),
+                        Tax = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity) * 0.1m, // 10% tax
+                        Shipping = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity) > 50 ? 0m : 5.99m, // Free shipping over $50
+                        Total = 0m // Calculated below
+                    },
+                    ShippingAddress = new AddressViewModel(),
+                    BillingAddress = new AddressViewModel(),
+                    PaymentMethod = "CreditCard"
+                };
+
+                checkoutViewModel.Cart.Total = checkoutViewModel.Cart.Subtotal +
+                                             checkoutViewModel.Cart.Tax +
+                                             checkoutViewModel.Cart.Shipping;
+
+
+                return View(checkoutViewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading checkout page");
+                TempData["ErrorMessage"] = "There was an error loading the checkout page. Please try again.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        [Authorize]
+        [HttpPost("checkout")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProcessCheckout([FromForm] CheckoutViewModel model)
+        {
+            if (model.SameAsShipping)
+            {
+                ModelState.Remove("BillingAddress.FirstName");
+                ModelState.Remove("BillingAddress.LastName");
+                ModelState.Remove("BillingAddress.AddressLine1");
+                ModelState.Remove("BillingAddress.AddressLine2");
+                ModelState.Remove("BillingAddress.City");
+                ModelState.Remove("BillingAddress.State");
+                ModelState.Remove("BillingAddress.ZipCode");
+                ModelState.Remove("BillingAddress.Country");
+                ModelState.Remove("BillingAddress.PhoneNumber");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Repopulate the cart if validation fails
+                var cart = await GetOrCreateCartAsync(includeItems: true);
+                model.Cart = new CartViewModel
+                {
+                    CartId = cart.Id.ToString(),
+                    Items = cart.Items.Select(item => new CartItemViewModel
+                    {
+                        ItemId = item.Id.ToString(),
+                        Quantity = item.Quantity,
+                        Product = new ProductViewModel
+                        {
+                            Id = item.ProductId,
+                            Name = item.Product?.Name,
+                            Price = item.Product?.Price ?? 0m
+                        },
+                        TotalPrice = (int)((item.Product?.Price ?? 0m) * item.Quantity)
+                    }).ToList(),
+                    Subtotal = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity),
+                    Tax = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity) * 0.1m,
+                    Shipping = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity) > 50 ? 0m : 5.99m,
+                    Total = 0m
+                };
+                model.Cart.Total = model.Cart.Subtotal + model.Cart.Tax + model.Cart.Shipping;
+
+                // Add error messages to ViewData
+                ViewData["ErrorMessage"] = "There are errors in the form. Please review your information.";
+
+                return View("Checkout", model);
+            }
+
+            try
+            {
+                var cart = await GetOrCreateCartAsync(includeItems: true);
+
+                // Process payment, save order, clear cart, etc.
+
+                TempData["SuccessMessage"] = "Order placed successfully!";
+                ViewBag.CartItemCount = cart.Items.Sum(item => item.Quantity);
+
+                return RedirectToAction("Index", "Orders"); // or wherever you list past orders
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing checkout");
+                TempData["ErrorMessage"] = "There was an error processing your order. Please try again.";
+
+                // Add error message to ViewData for view rendering
+                ViewData["ErrorMessage"] = "There are errors in the form. Please review your information.";
+
+                return RedirectToAction("Checkout");
+            }
+        }
+
 
         // ---------------------------- Merge Guest Cart on Login ----------------------------
 
         [Authorize]
+        [HttpGet("merge")]
         public async Task<IActionResult> MergeAfterLogin()
         {
-            string userId = GetUserId();
-            if (string.IsNullOrEmpty(userId))
-                return RedirectToAction("Index");
-
-            if (HttpContext.Session.TryGetValue(SessionCartIdKey, out byte[] sessionCartIdBytes))
+            try
             {
-                var sessionCartId = System.Text.Encoding.UTF8.GetString(sessionCartIdBytes);
-                await _cartService.MergeGuestCartWithUserCartAsync(sessionCartId, userId);
-                HttpContext.Session.Remove(SessionCartIdKey);
-            }
+                string userId = GetUserId();
+                if (string.IsNullOrEmpty(userId))
+                    return RedirectToAction("Index");
 
-            return RedirectToAction("Index");
+                if (HttpContext.Session.TryGetValue(SessionCartIdKey, out byte[] sessionCartIdBytes))
+                {
+                    var sessionCartId = System.Text.Encoding.UTF8.GetString(sessionCartIdBytes);
+                    await _cartService.MergeGuestCartWithUserCartAsync(sessionCartId, userId);
+                    HttpContext.Session.Remove(SessionCartIdKey);
+                }
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error merging guest cart");
+                TempData["ErrorMessage"] = "There was an error merging your guest cart with your account.";
+                return RedirectToAction("Index");
+            }
         }
 
         // ---------------------------- Helper Methods ----------------------------
@@ -134,5 +479,47 @@ namespace TechXpress.Web.Controllers
             var cartId = System.Text.Encoding.UTF8.GetString(cartIdBytes);
             return await _cartService.GetCartByIdAsync(cartId, includeItems);
         }
+
+        private async Task<CartSummaryViewModel> GetCartSummary()
+        {
+            var cart = await GetOrCreateCartAsync(includeItems: true);
+            if (cart == null || cart.Items == null || !cart.Items.Any())
+            {
+                return new CartSummaryViewModel { ItemCount = 0, Subtotal = 0m };
+            }
+
+            var subtotal = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity);
+            var tax = subtotal * 0.1m; // 10% tax
+            var shipping = subtotal > 50 ? 0m : 5.99m; // Free shipping over $50
+            var total = subtotal + tax + shipping;
+
+            return new CartSummaryViewModel
+            {
+                ItemCount = cart.Items.Sum(item => item.Quantity),
+                Subtotal = subtotal,
+                Tax = tax,
+                Shipping = shipping,
+                Total = total,
+                Items = cart.Items.Select(item => new CartSummaryItemViewModel
+                {
+                    ProductId = item.ProductId,
+                    ProductName = item.Product?.Name,
+                    Quantity = item.Quantity,
+                    Price = item.Product?.Price ?? 0m,
+                    ImageUrl = item.Product?.ImageUrl
+                }).ToList()
+            };
+        }
+
+        private bool ProcessPayment(CheckoutViewModel model)
+        {
+            // In a real implementation, this would integrate with a payment gateway
+            // For demo purposes, we'll just simulate a successful payment
+            return true;
+        }
     }
+
+    // ---------------------------- View Models ----------------------------
+
+   
 }

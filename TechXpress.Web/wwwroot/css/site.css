@@ -99,3 +99,51 @@ body {
     object-fit: cover;
     margin-right: 10px;
 }
+
+
+
+
+/* Cart page styles */
+.cart-item-image {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+/* Checkout page styles */
+#billing-address {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Cart dropdown styles */
+.cart-dropdown-image {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.cart-dropdown-items {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Quantity input styles */
+.quantity-input {
+    max-width: 50px;
+    text-align: center;
+}
+
+/* Empty cart styles */
+.empty-cart-icon {
+    opacity: 0.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .cart-item-image {
+        width: 60px;
+        height: 60px;
+    }
+}

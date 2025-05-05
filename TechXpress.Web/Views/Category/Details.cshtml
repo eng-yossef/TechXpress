@@ -74,7 +74,7 @@
                         <h5 class="card-title">@product.Name</h5>
                         <p class="card-text">@product.Description</p>
                         <p class="h5">@product.Price.ToString("C")</p>
-                        <a href="@Url.Action("Details", "Product", new { id = product.Id })"
+                        <a href="@Url.Action("Details", "Products", new { id = product.Id })"
                            class="btn btn-primary">
                             View Details
                         </a>

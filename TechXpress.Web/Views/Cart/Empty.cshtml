@@ -2,12 +2,13 @@
     ViewData["Title"] = "Your Cart is Empty";
 }
 
-<div class="text-center mt-5">
-    <i class="fas fa-shopping-cart fa-5x text-muted"></i>
-    <h2 class="mt-4">Your shopping cart is empty</h2>
-    <p class="lead text-secondary">Looks like you haven't added any items yet.</p>
-
-    <a class="btn btn-primary btn-lg mt-3" href="@Url.Action("Index", "Products")">
-        <i class="fas fa-arrow-left"></i> Continue Shopping
+<div class="container text-center py-5">
+    <div class="empty-cart-icon">
+        <i class="bi bi-cart-x" style="font-size: 5rem; color: #6c757d;"></i>
+    </div>
+    <h2 class="mt-4">Your Cart is Empty</h2>
+    <p class="lead">Looks like you haven't added any items to your cart yet.</p>
+    <a href="@Url.Action("Index", "Products")" class="btn btn-primary btn-lg mt-3">
+        <i class="bi bi-arrow-left"></i> Continue Shopping
     </a>
 </div>

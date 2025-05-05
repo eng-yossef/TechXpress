@@ -88,6 +88,9 @@ namespace TechXpress.Web
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseMiddleware<CartItemCountMiddleware>();
+
             // Add response caching services
             builder.Services.AddResponseCaching();
 

@@ -22,8 +22,23 @@ namespace TechXpress.Web.Controllers
         protected async Task<int> GetCartItemCountAsync()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                // User is not signed in; return 0 items
+                return 0;
+            }
+
             var cart = await _cartService.GetCartByUserIdAsync(userId);
+
+            if (cart == null)
+            {
+                // No cart found; return 0 items
+                return 0;
+            }
+
             return await _cartService.GetCartItemCountAsync(cart.Id);
         }
+
     }
 }

@@ -8,5 +8,8 @@ namespace TechXpress.Web.ViewModels
         public int Quantity { get; set; }
 
         public ProductViewModel Product { get; set; }
+
+        //TotalPrice
+        public int TotalPrice {  get; set; }
     }
 }

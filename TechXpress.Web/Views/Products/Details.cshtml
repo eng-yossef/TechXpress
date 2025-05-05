@@ -116,24 +116,33 @@
 
                 <form asp-controller="Cart" asp-action="AddToCart" method="post" class="mb-4">
                     <input type="hidden" name="productId" value="@Model.Product.Id" />
+
                     <div class="row align-items-center">
+                        <!-- Quantity Selector -->
                         <div class="col-md-3 mb-3 mb-md-0">
-                            <div class="input-group quantity-control">
+                            <div class="input-group quantity-control" style="width: 140px;">
                                 <button type="button" class="btn btn-outline-secondary quantity-minus">
                                     <i class="fas fa-minus"></i>
                                 </button>
-                                <input type="number" name="quantity" value="1" min="1" class="form-control text-center quantity-input" />
-                                <button type="button" class="btn btn-outline-secondary quantity-plus">
+                                <input type="number"
+                                       name="quantity"
+                                       value="1"
+                                       min="1"
+                                       class="form-control text-center quantity-input"
+                                       style="min-width: 60px; color: #000; padding:0px"
+                                       />
+                                <button type="button" class="btn btn-outline-secondary quantity-plus" >
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Action Buttons -->
                         <div class="col-md-9">
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-primary flex-grow-1">
                                     <i class="fas fa-shopping-cart me-2"></i> Add to Cart
                                 </button>
-                                <!-- Buy Now can be wired later -->
                                 <button type="button" class="btn btn-outline-danger buy-now-btn">
                                     <i class="fas fa-bolt me-2"></i> Buy Now
                                 </button>
@@ -141,6 +150,7 @@
                         </div>
                     </div>
                 </form>
+
 
                 <div class="product-actions d-flex gap-2 mb-4">
                     <button class="btn btn-outline-secondary wishlist-btn">
@@ -714,13 +724,15 @@
                         <button class="btn btn-sm btn-outline-secondary quick-view-btn" data-product-id="@relatedProduct.Id">
                             <i class="far fa-eye"></i>
                         </button>
-                        <form asp-action="AddToCart" method="post">
-                            <input type="hidden" name="productId" value="@relatedProduct.Id" />
-                            <input type="hidden" name="quantity" value="1" />
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                <i class="fas fa-shopping-cart"></i>
-                            </button>
-                        </form>
+                                    <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="productId" value="@relatedProduct.Id" />
+                                        <input type="hidden" name="quantity" value="1" />
+                                        <button type="submit" class="btn btn-sm btn-primary" title="Add to Cart">
+                                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                                        </button>
+                                    </form>
+
                     </div>
                 </div>
             </div>
@@ -805,21 +817,31 @@
 
         <script>
             document.addEventListener("DOMContentLoaded", function () {
-                const minusBtn = document.querySelector('.quantity-minus');
-                const plusBtn = document.querySelector('.quantity-plus');
-                const quantityInput = document.querySelector('.quantity-input');
+                // Select all quantity control sections
+                const quantityControls = document.querySelectorAll('.quantity-control');
 
-                minusBtn.addEventListener('click', () => {
-                    let current = parseInt(quantityInput.value);
-                    if (current > 1) quantityInput.value = current - 1;
-                });
+                quantityControls.forEach(control => {
+                    const minusBtn = control.querySelector('.quantity-minus');
+                    const plusBtn = control.querySelector('.quantity-plus');
+                    const quantityInput = control.querySelector('.quantity-input');
 
-                plusBtn.addEventListener('click', () => {
-                    let current = parseInt(quantityInput.value);
-                    quantityInput.value = current + 1;
+                    // Decrease quantity
+                    minusBtn.addEventListener('click', () => {
+                        let current = parseInt(quantityInput.value);
+                        if (current > 1) {
+                            quantityInput.value = current;
+                        }
+                    });
+
+                    // Increase quantity
+                    plusBtn.addEventListener('click', () => {
+                        let current = parseInt(quantityInput.value);
+                        quantityInput.value = current;
+                    });
                 });
             });
         </script>
+
 
     <script>
         $(document).ready(function(){

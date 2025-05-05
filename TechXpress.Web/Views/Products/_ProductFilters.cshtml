@@ -63,11 +63,11 @@
                 clearBtn.addEventListener('click', function(e) {
                     e.preventDefault(); 
 
-                    Reset form fields programmatically if needed
+                    // Reset form fields programmatically if needed
                     document.getElementById('min-price').value = '';
                     document.getElementById('max-price').value = '';
 
-                    If you prevented default, you'd need to navigate manually:
+                    // If you prevented default, you'd need to navigate manually:
                     window.location.href = clearBtn.getAttribute('href');
                 });
             });
