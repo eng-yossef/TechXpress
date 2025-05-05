@@ -14,6 +14,10 @@
     <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name">
     <div class="card-body">
         <h5 class="card-title">@Model.Name</h5>
+
+        <!-- Display Category -->
+        <p class="text-muted mb-2">Category: @Model.Category?.Name</p>
+
         <div class="d-flex justify-content-between align-items-center">
             <span class="text-primary font-weight-bold">@Model.Price.ToString("C")</span>
             @if (Model.Reviews.Any())
@@ -32,11 +36,20 @@
             }
         </div>
     </div>
-    <div class="card-footer bg-transparent">
+
+    <div class="card-footer bg-transparent d-flex flex-row gap-2">
         <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary btn-block">View Details</a>
+
+        <!-- Add to Cart Button -->
+        <form asp-controller="Cart" asp-action="AddToCart" method="post">
+            <input type="hidden" name="productId" value="@Model.Id" />
+            <button type="submit" class="btn btn-success btn-block">
+                <i class="fas fa-cart-plus"></i> 
+            </button>
+        </form>
+
+    </div>
         <button class="btn btn-sm btn-outline-secondary quick-view-btn" data-product-id="@Model.Id">
             <i class="far fa-eye"></i>
         </button>
-    </div>
 </div>
-

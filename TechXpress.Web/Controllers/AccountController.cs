@@ -60,7 +60,6 @@ namespace TechXpress.Web.Controllers
                 var claims = new List<Claim>
         {
             new Claim("ProfilePictureUrl", user.ProfilePictureUrl ?? "/images/download.jpeg")
-            // Add other custom claims if needed
         };
 
                 // Sign out basic identity session and sign in again with claims
@@ -241,23 +240,50 @@ namespace TechXpress.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadProfilePicture(IFormFile profileImage)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // or however you get the current user ID
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
 
             if (profileImage != null && profileImage.Length > 0)
             {
                 var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/profiles");
                 Directory.CreateDirectory(uploadsFolder);
 
+                // Delete old image
+                if (!string.IsNullOrEmpty(user.ProfilePictureUrl))
+                {
+                    var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.ProfilePictureUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(oldPath))
+                    {
+                        System.IO.File.Delete(oldPath);
+                    }
+                }
+
+                // Save new image
                 var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImage.FileName);
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await profileImage.CopyToAsync(stream);
                 }
 
+                // Update user profile picture URL
                 var relativePath = "/images/profiles/" + uniqueFileName;
-                await _userService.UpdateProfilePicture(userId, relativePath);
+                user.ProfilePictureUrl = relativePath;
+                await _userManager.UpdateAsync(user);
+
+                // 🔁 Update claims
+                var currentClaims = await _userManager.GetClaimsAsync(user);
+                var oldClaim = currentClaims.FirstOrDefault(c => c.Type == "ProfilePictureUrl");
+                if (oldClaim != null)
+                {
+                    await _userManager.RemoveClaimAsync(user, oldClaim);
+                }
+
+                var newClaim = new Claim("ProfilePictureUrl", user.ProfilePictureUrl ?? "/images/download.jpeg");
+                await _userManager.AddClaimAsync(user, newClaim);
+
+                // 🔐 Re-sign in user to refresh claims
+                await _signInManager.RefreshSignInAsync(user);
 
                 return RedirectToAction("Manage");
             }

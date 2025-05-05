@@ -1,4 +1,5 @@
-﻿using TechXpress.Data.Models.Contexts;
+﻿using Microsoft.EntityFrameworkCore;
+using TechXpress.Data.Models.Contexts;
 using TechXpress.Web.Services.Interfaces;
 
 namespace TechXpress.Web.Services.Implementations
@@ -11,6 +12,13 @@ namespace TechXpress.Web.Services.Implementations
         {
             _context = context;
         }
+
+        public async Task<string> GetProfilePicturePath(string userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            return user?.ProfilePictureUrl;
+        }
+
 
         public async Task UpdateProfilePicture(string userId, string profilePicturePath)
         {
