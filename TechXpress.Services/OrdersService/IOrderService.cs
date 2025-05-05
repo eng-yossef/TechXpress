@@ -17,7 +17,10 @@ namespace TechXpress.Services.OrdersService
         Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status);
 
         // Order processing
-        Task<Order> CreateOrderAsync(string userId, string shippingAddress, IEnumerable<OrderDetail> items);
+        Task<Order> CreateOrderAsync(string userId, AddressViewModel shippingAddress, IEnumerable<OrderDetail> items);
+        //AddOrderAsync
+        Task AddOrderAsync(Order order);
+
         Task UpdateOrderStatusAsync(int orderId, OrderStatus newStatus, string adminNotes = null);
         Task AddOrderNoteAsync(int orderId, string note, bool isAdminNote = false);
 

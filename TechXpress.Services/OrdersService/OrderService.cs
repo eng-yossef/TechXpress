@@ -31,6 +31,14 @@ namespace TechXpress.Services.OrdersService
             return $"Latest order: {recentOrders.FirstOrDefault()?.OrderNumber} | Order Service is operational";
         }
 
+        //AddOrderAsync
+        public async Task<Order> AddOrderAsync(Order order)
+        {
+            await _unitOfWork.Orders.AddOrderAsync(order);
+            //await _unitOfWork.CompleteAsync();
+            return order;
+        }
+
         public async Task<Order> GetOrderWithDetailsAsync(int orderId)
         {
             return await _orderRepository.GetOrderWithDetailsAsync(orderId);
@@ -46,7 +54,7 @@ namespace TechXpress.Services.OrdersService
             return await _orderRepository.GetOrdersByStatusAsync(status);
         }
 
-        public async Task<Order> CreateOrderAsync(string userId, string shippingAddress, IEnumerable<OrderDetail> items)
+        public async Task<Order> CreateOrderAsync(string userId, AddressViewModel shippingAddress, IEnumerable<OrderDetail> items)
         {
             var order = new Order
             {
@@ -118,5 +126,60 @@ namespace TechXpress.Services.OrdersService
                 skip,
                 take);
         }
+
+        Task IOrderService.AddOrderAsync(Order order)
+        {
+            return AddOrderAsync(order);
+        }
+
+        //public async Task<Order> CreateOrderAsync(string userId, AddressViewModel shippingAddress, IEnumerable<OrderDetail> items)
+        //{
+        //    // 1. Validate input (you can add custom validation here)
+        //    if (string.IsNullOrEmpty(userId))
+        //    {
+        //        throw new ArgumentException("UserId is required");
+        //    }
+
+        //    if (items == null || !items.Any())
+        //    {
+        //        throw new ArgumentException("Order must contain at least one item");
+        //    }
+
+        //    // 2. Calculate the total price, tax, and shipping (as per your logic)
+        //    decimal subtotal = items.Sum(item => item.Price * item.Quantity);
+        //    decimal taxAmount = subtotal * 0.1m; // Example: 10% tax
+        //    decimal shippingFee = subtotal > 50 ? 0m : 5.99m; // Free shipping for orders above $50
+        //    decimal totalAmount = subtotal + taxAmount + shippingFee;
+
+        //    // 3. Create the order object
+        //    var order = new Order
+        //    {
+        //        UserId = userId,
+        //        ShippingAddress = new AddressViewModel
+        //        {
+        //            // Assuming shippingAddress is a JSON string that can be deserialized into AddressViewModel
+        //            FirstName = shippingAddress.FirstName,
+        //            LastName = shippingAddress.LastName,
+        //            AddressLine1 = shippingAddress.AddressLine1,
+        //            AddressLine2 = shippingAddress.AddressLine2,
+        //            City = shippingAddress.City,
+        //            State = shippingAddress.State,
+        //            ZipCode = shippingAddress.ZipCode,
+        //            Country = shippingAddress.Country,
+        //            PhoneNumber = shippingAddress.PhoneNumber
+        //        },
+        //        OrderDetails = items.ToList(),
+        //        TotalAmount = totalAmount,
+        //        OrderStatus = OrderStatus.Pending, // Set initial status to Pending
+        //        OrderDate = DateTime.UtcNow,
+        //    };
+
+        //    // 4. Use the _orderRepository to save the order to the database
+        //    await _orderRepository.AddAsync(order);
+
+        //    // 5. Return the created order
+        //    return order;
+        //}
+
     }
 }

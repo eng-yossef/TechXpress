@@ -33,7 +33,7 @@ namespace TechXpress.Services.ShoppingCartsService
         Task UpdateItemQuantityAsync(int cartId, int productId, int newQuantity);
 
         // Checkout
-        Task<Order> ConvertCartToOrderAsync(int cartId, string shippingAddress);
+        Task<Order> ConvertCartToOrderAsync(int cartId, AddressViewModel shippingAddress);
 
         // Advanced operations
         Task MergeCartsAsync(string userId, int temporaryCartId);

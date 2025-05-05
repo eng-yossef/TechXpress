@@ -141,7 +141,7 @@ namespace TechXpress.Services.ShoppingCartsService
             }
         }
 
-        public async Task<Order> ConvertCartToOrderAsync(int cartId, string shippingAddress)
+        public async Task<Order> ConvertCartToOrderAsync(int cartId, AddressViewModel shippingAddress)
         {
             var cart = await GetCartWithItemsAsync(cartId);
             if (cart == null || !cart.Items.Any())

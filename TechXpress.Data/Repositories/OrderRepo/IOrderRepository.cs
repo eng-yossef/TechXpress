@@ -14,6 +14,10 @@ namespace TechXpress.Data.Repositories.OrderRepo
 
         // Core order operations
         Task<Order> GetOrderWithDetailsAsync(int orderId);
+        //AddOrderAsync 
+        Task AddOrderAsync(Order order);
+
+        Task<Order> CreateOrderAsync(string userId, AddressViewModel shippingAddress, IEnumerable<OrderDetail> items);
         Task<IEnumerable<Order>> GetOrdersByUserAsync(string userId);
         Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status);
 

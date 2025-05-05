@@ -30,6 +30,7 @@ namespace TechXpress.Services.GenericServices
         public async Task AddAsync(T entity)
         {
             await _repository.AddAsync(entity);
+
         }
 
         public void Update(T entity)

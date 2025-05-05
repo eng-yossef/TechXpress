@@ -17,6 +17,11 @@ namespace TechXpress.Data.Models.Contexts
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Payment> Payments { get; set; }
 
+        //Address
+        public DbSet<AddressViewModel> Addresses { get; set; }
+
+
+
         public DbSet<ProductSpecification> ProductSpecification { get; set; }
         // public DbSet<AdminLog> AdminLogs { get; set; }
 

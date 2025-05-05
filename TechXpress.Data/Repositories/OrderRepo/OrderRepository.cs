@@ -20,6 +20,28 @@ namespace TechXpress.Data.Repositories.OrderRepo
         {
             return "Order Repository is operational";
         }
+        //AddOrderAsync
+        //Task AddOrderAsync(Order order)
+        //{
+        //    _context.Set<Order>().Add(order);
+        //    return _context.SaveChangesAsync();
+        //}
+        public async Task<Order> CreateOrderAsync(string userId,AddressViewModel shippingAddress, IEnumerable<OrderDetail> items)
+        {
+            var order = new Order
+            {
+                UserId = userId,
+                ShippingAddress = shippingAddress,
+                OrderDate = DateTime.UtcNow,
+                OrderStatus = OrderStatus.Pending,
+                PaymentStatus = PaymentStatus.Pending,
+                OrderDetails = items.ToList(),
+                TotalAmount = items.Sum(i => i.Price * i.Quantity)
+            };
+            await _context.Set<Order>().AddAsync(order);
+            await _context.SaveChangesAsync();
+            return order;
+        }
 
         public async Task<Order> GetOrderWithDetailsAsync(int orderId)
         {
@@ -60,7 +82,7 @@ namespace TechXpress.Data.Repositories.OrderRepo
             if (endDate.HasValue)
                 query = query.Where(o => o.OrderDate <= endDate.Value);
 
-            return await query.SumAsync(o => o.TotalAmount);
+            return (decimal)await query.SumAsync(o => o.TotalAmount);
         }
 
         public async Task<int> GetOrderCountAsync(OrderStatus? status = null)
@@ -185,5 +207,18 @@ namespace TechXpress.Data.Repositories.OrderRepo
             return await _context.Set<Order>()
                 .AnyAsync(o => o.Id == orderId && o.PaymentStatus == PaymentStatus.Completed);
         }
+
+        Task IOrderRepository.AddOrderAsync(Order order)
+        {
+            // Detach any existing User entity if it exists
+            if (order.User != null && _context.Entry(order.User).State != EntityState.Detached)
+            {
+                _context.Entry(order.User).State = EntityState.Detached;
+            }
+
+            _context.Orders.Add(order);
+            return _context.SaveChangesAsync();
+        }
+
     }
 }

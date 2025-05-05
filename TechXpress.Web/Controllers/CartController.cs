@@ -11,6 +11,8 @@ using TechXpress.Services.ShoppingCartsService;
 using TechXpress.Web.ViewModels;
 using Microsoft.Extensions.Logging;
 using TechXpress.Web.Extensions;
+using TechXpress.Services.OrdersDetailsService;
+using TechXpress.Services.OrdersService;
 //using TechXpress.Web.Extensions;
 
 namespace TechXpress.Web.Controllers
@@ -22,6 +24,8 @@ namespace TechXpress.Web.Controllers
         private readonly ICartItemService _cartItemService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<CartController> _logger;
+        private readonly IOrderDetailsService _orderDetailsService;
+        private readonly IOrderService _orderService;
 
         private const string SessionCartIdKey = "CartId";
 
@@ -29,11 +33,16 @@ namespace TechXpress.Web.Controllers
             IShoppingCartService cartService,
             ICartItemService cartItemService,
             IHttpContextAccessor httpContextAccessor,
+            IOrderDetailsService orderDetailsService,
+            IOrderService orderService,
+
             ILogger<CartController> logger)
         {
             _cartService = cartService;
             _cartItemService = cartItemService;
             _httpContextAccessor = httpContextAccessor;
+            _orderDetailsService = orderDetailsService;
+            _orderService = orderService;
             _logger = logger;
         }
 
@@ -353,6 +362,7 @@ namespace TechXpress.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ProcessCheckout([FromForm] CheckoutViewModel model)
         {
+            // If Billing address is same as shipping, set it explicitly and remove validation
             if (model.SameAsShipping)
             {
                 ModelState.Remove("BillingAddress.FirstName");
@@ -364,12 +374,27 @@ namespace TechXpress.Web.Controllers
                 ModelState.Remove("BillingAddress.ZipCode");
                 ModelState.Remove("BillingAddress.Country");
                 ModelState.Remove("BillingAddress.PhoneNumber");
+
+                model.BillingAddress = model.ShippingAddress;
             }
+
+            // Get the cart and ensure it exists with items
+            var cart = await GetOrCreateCartAsync(includeItems: true);
+            if (cart == null || cart.Items == null || !cart.Items.Any())
+            {
+                TempData["ErrorMessage"] = "Your cart is empty.";
+                return RedirectToAction("Index", "Cart");
+            }
+
+            // Recalculate totals
+            decimal subtotal = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity);
+            decimal tax = subtotal * 0.1m;
+            decimal shipping = subtotal > 50 ? 0m : 5.99m;
+            decimal totalAmount = subtotal + tax + shipping;
 
             if (!ModelState.IsValid)
             {
-                // Repopulate the cart if validation fails
-                var cart = await GetOrCreateCartAsync(includeItems: true);
+                // Repopulate cart view model if form validation fails
                 model.Cart = new CartViewModel
                 {
                     CartId = cart.Id.ToString(),
@@ -385,38 +410,57 @@ namespace TechXpress.Web.Controllers
                         },
                         TotalPrice = (int)((item.Product?.Price ?? 0m) * item.Quantity)
                     }).ToList(),
-                    Subtotal = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity),
-                    Tax = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity) * 0.1m,
-                    Shipping = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity) > 50 ? 0m : 5.99m,
-                    Total = 0m
+                    Subtotal = subtotal,
+                    Tax = tax,
+                    Shipping = shipping,
+                    Total = totalAmount
                 };
-                model.Cart.Total = model.Cart.Subtotal + model.Cart.Tax + model.Cart.Shipping;
 
-                // Add error messages to ViewData
                 ViewData["ErrorMessage"] = "There are errors in the form. Please review your information.";
-
                 return View("Checkout", model);
             }
 
             try
             {
-                var cart = await GetOrCreateCartAsync(includeItems: true);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                // Process payment, save order, clear cart, etc.
+                // 1. Save the order first to generate a valid OrderId
+                var order = new Order
+                {
+                    UserId = userId,
+                    ShippingAddress = model.ShippingAddress,
+                    //BillingAddress = model.BillingAddress,
+                    PaymentStatus = PaymentStatus.Pending,
+                    OrderStatus = OrderStatus.Pending,
+                    OrderDate = DateTime.UtcNow,
+                    TotalAmount = totalAmount
+                };
+                order.User = null;
+
+
+                await _orderService.AddOrderAsync(order);
+
+                // 2. Now use order.Id safely
+                var orderDetails = cart.Items.Select(item => new OrderDetail
+                {
+                    OrderId = order.Id,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    Price = item.Product?.Price ?? 0m
+                });
+
+                await _orderDetailsService.AddRangeAsync(orderDetails);
+
+                // 3. Clear the cart
+                await _cartService.ClearCartAsync(cart.Id);
 
                 TempData["SuccessMessage"] = "Order placed successfully!";
-                ViewBag.CartItemCount = cart.Items.Sum(item => item.Quantity);
-
-                return RedirectToAction("Index", "Orders"); // or wherever you list past orders
+                return RedirectToAction("Index", "Orders");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing checkout");
                 TempData["ErrorMessage"] = "There was an error processing your order. Please try again.";
-
-                // Add error message to ViewData for view rendering
-                ViewData["ErrorMessage"] = "There are errors in the form. Please review your information.";
-
                 return RedirectToAction("Checkout");
             }
         }
