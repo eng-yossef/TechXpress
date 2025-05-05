@@ -94,19 +94,7 @@
 @section Scripts {
     <script>
         $(function() {
-            // Initialize price range slider
-            $("#price-range").slider({
-                range: true,
-                min: 0,
-                max: 1000,
-                values: [@(Model.MinPrice ?? 0), @(Model.MaxPrice ?? 1000)],
-                slide: function(event, ui) {
-                    $("#min-price").val(ui.values[0]);
-                    $("#max-price").val(ui.values[1]);
-                    $("#search-form").submit(); // Submit when price changes
-                }
-            });
-
+         
           
              // Quick view modal
             document.querySelectorAll('.quick-view-btn').forEach(button => {
@@ -142,10 +130,7 @@
                 }
             });
 
-            // Submit form when price inputs change
-            $('input[name="minPrice"], input[name="maxPrice"]').on('change', function() {
-                $("#search-form").submit();
-            });
+          
         });
     </script>
 }

@@ -84,7 +84,7 @@ namespace TechXpress.Web.Controllers
                 ? await _productService.GetFilteredAsync(
                     filter: p => p.CategoryId == categoryId && p.Id != categoryId,
                     orderBy: q => q.OrderByDescending(p => p.Reviews.Average(r => r.Rating)),
-                    take: 3)
+                    take: 2)
                 : Enumerable.Empty<Data.Models.ProductViewModel>();
 
             var viewModel = new ProductIndexViewModel
