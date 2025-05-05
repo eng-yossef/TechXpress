@@ -19,6 +19,8 @@ using TechXpress.Services.OrdersDetailsService;
 using TechXpress.Services.ShoppingCartsService;
 using TechXpress.Data.Repositories.ShoppingCartRepo;
 using TechXpress.Web.Filters;
+using TechXpress.Web.Services.Interfaces;
+using TechXpress.Web.Services.Implementations;
 
 namespace TechXpress.Web
 {
@@ -69,6 +71,8 @@ namespace TechXpress.Web
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IOrderDetailsService, OrderDetailsService>();
             builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
+            //IUserService
+            builder.Services.AddScoped<IUserService,UserService>();
 
             //Add filters 
             builder.Services.AddScoped<UpdateCartItemCountFilter>();
@@ -89,7 +93,8 @@ namespace TechXpress.Web
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseMiddleware<CartItemCountMiddleware>();
+
+            //app.UseMiddleware<CartItemCountMiddleware>();
 
             // Add response caching services
             builder.Services.AddResponseCaching();

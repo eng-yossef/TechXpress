@@ -2,7 +2,9 @@
 @using TechXpress.Data.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
-
+@{
+    var profileUrl = User?.FindFirst("ProfilePictureUrl")?.Value ?? "/images/download.jpeg";
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,11 +16,14 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    
 
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TechXpress.Web.styles.css" asp-append-version="true" />
 	<link rel="stylesheet" href="~/css/stars.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+
 </head>
 <body>
     <!-- Header -->
@@ -114,6 +119,9 @@
                             </a>
                         }
                     </div>
+                    <img src="@profileUrl" alt="Profile" class="rounded-circle"
+                         style="width: 40px; height: 40px; margin-left: 10px; object-fit: cover; display: block; margin-right: auto; margin-left: auto;" />
+
                 </div>
             </div>
         </nav>
