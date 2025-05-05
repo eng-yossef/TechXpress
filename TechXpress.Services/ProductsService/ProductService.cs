@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using TechXpress.Data.Models;
+using TechXpress.Data.Models.Contexts;
 using TechXpress.Data.Repositories.GenericRepository;
 using TechXpress.Data.Repositories.ProductRepo;
 using TechXpress.Data.UnitOfWork;
@@ -22,6 +23,11 @@ namespace TechXpress.Services.ProductsService
         {
             _unitOfWork = unitOfWork;
             _productRepository = unitOfWork.Products as IProductRepository;
+        }
+
+        public TechXpressDbContext GetDbContext()
+        {
+            return _unitOfWork.Context;
         }
 
         public async Task<string> Test()

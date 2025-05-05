@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechXpress.Data.Models.Contexts;
 using TechXpress.Data.Repositories.CartItemRepo;
 using TechXpress.Data.Repositories.CategoryRepo;
 using TechXpress.Data.Repositories.OrderDetailRepo;
@@ -15,6 +16,7 @@ namespace TechXpress.Data.UnitOfWork
 {
     public interface IUnitOfWork : IDisposable
     {
+        TechXpressDbContext Context { get; } // Expose the DbContext for direct access if needed
         IProductRepository Products { get; }
         ICategoryRepository Categories { get; }
         IOrderRepository Orders { get; }

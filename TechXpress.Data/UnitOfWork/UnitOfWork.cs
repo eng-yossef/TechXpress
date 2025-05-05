@@ -18,6 +18,7 @@ namespace TechXpress.Data.UnitOfWork
     public class UnitOfWork : IUnitOfWork
     {
         private readonly TechXpressDbContext _context;
+        public TechXpressDbContext Context => _context;
 
         public IProductRepository Products { get;  set; }
         public ICategoryRepository Categories { get;  set; }

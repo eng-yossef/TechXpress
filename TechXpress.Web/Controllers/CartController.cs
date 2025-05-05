@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using TechXpress.Web.Extensions;
 using TechXpress.Services.OrdersDetailsService;
 using TechXpress.Services.OrdersService;
+using Microsoft.EntityFrameworkCore;
+using TechXpress.Services.ProductsService;
 //using TechXpress.Web.Extensions;
 
 namespace TechXpress.Web.Controllers
@@ -26,6 +28,7 @@ namespace TechXpress.Web.Controllers
         private readonly ILogger<CartController> _logger;
         private readonly IOrderDetailsService _orderDetailsService;
         private readonly IOrderService _orderService;
+        private readonly IProductService _productService;
 
         private const string SessionCartIdKey = "CartId";
 
@@ -35,6 +38,7 @@ namespace TechXpress.Web.Controllers
             IHttpContextAccessor httpContextAccessor,
             IOrderDetailsService orderDetailsService,
             IOrderService orderService,
+            IProductService  productService,
 
             ILogger<CartController> logger)
         {
@@ -43,6 +47,7 @@ namespace TechXpress.Web.Controllers
             _httpContextAccessor = httpContextAccessor;
             _orderDetailsService = orderDetailsService;
             _orderService = orderService;
+            _productService = productService;
             _logger = logger;
         }
 
@@ -362,7 +367,6 @@ namespace TechXpress.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ProcessCheckout([FromForm] CheckoutViewModel model)
         {
-            // If Billing address is same as shipping, set it explicitly and remove validation
             if (model.SameAsShipping)
             {
                 ModelState.Remove("BillingAddress.FirstName");
@@ -378,15 +382,15 @@ namespace TechXpress.Web.Controllers
                 model.BillingAddress = model.ShippingAddress;
             }
 
-            // Get the cart and ensure it exists with items
-            var cart = await GetOrCreateCartAsync(includeItems: true);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var cart = await _cartService.GetOrCreateUserCartAsync(userId,includeItems: true);
             if (cart == null || cart.Items == null || !cart.Items.Any())
             {
                 TempData["ErrorMessage"] = "Your cart is empty.";
                 return RedirectToAction("Index", "Cart");
             }
 
-            // Recalculate totals
             decimal subtotal = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity);
             decimal tax = subtotal * 0.1m;
             decimal shipping = subtotal > 50 ? 0m : 5.99m;
@@ -394,7 +398,6 @@ namespace TechXpress.Web.Controllers
 
             if (!ModelState.IsValid)
             {
-                // Repopulate cart view model if form validation fails
                 model.Cart = new CartViewModel
                 {
                     CartId = cart.Id.ToString(),
@@ -420,27 +423,41 @@ namespace TechXpress.Web.Controllers
                 return View("Checkout", model);
             }
 
+
+            // Use your shared DbContext from services if accessible
+            var dbContext = _productService.GetDbContext(); // You must expose it in your service
+            using var transaction = await dbContext.Database.BeginTransactionAsync();
+
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                // 1. Check and decrease product quantity
+                foreach (var item in cart.Items)
+                {
+                    var product = await _productService.GetByIdAsync(item.ProductId);
+                    if (product == null || product.StockQuantity < item.Quantity)
+                    {
+                        TempData["ErrorMessage"] = $"Not enough stock for {product?.Name ?? "a product"}.";
+                        return RedirectToAction("Checkout");
+                    }
 
-                // 1. Save the order first to generate a valid OrderId
+                    product.StockQuantity -= item.Quantity;
+                    await _productService.UpdateAsync(product);
+                }
+
+                // 2. Create Order
                 var order = new Order
                 {
                     UserId = userId,
                     ShippingAddress = model.ShippingAddress,
-                    //BillingAddress = model.BillingAddress,
                     PaymentStatus = PaymentStatus.Pending,
                     OrderStatus = OrderStatus.Pending,
                     OrderDate = DateTime.UtcNow,
                     TotalAmount = totalAmount
                 };
-                order.User = null;
-
 
                 await _orderService.AddOrderAsync(order);
 
-                // 2. Now use order.Id safely
+                // 3. Create OrderDetails
                 var orderDetails = cart.Items.Select(item => new OrderDetail
                 {
                     OrderId = order.Id,
@@ -451,15 +468,19 @@ namespace TechXpress.Web.Controllers
 
                 await _orderDetailsService.AddRangeAsync(orderDetails);
 
-                // 3. Clear the cart
+                // 4. Clear Cart
                 await _cartService.ClearCartAsync(cart.Id);
+
+                // 5. Commit transaction
+                await transaction.CommitAsync();
 
                 TempData["SuccessMessage"] = "Order placed successfully!";
                 return RedirectToAction("Index", "Orders");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing checkout");
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error processing checkout.");
                 TempData["ErrorMessage"] = "There was an error processing your order. Please try again.";
                 return RedirectToAction("Checkout");
             }

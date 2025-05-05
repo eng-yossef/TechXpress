@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using TechXpress.Data.Models;
+using TechXpress.Data.Models.Contexts;
 using TechXpress.Services.GenericServices;
 
 namespace TechXpress.Services.ProductsService
@@ -22,6 +23,9 @@ namespace TechXpress.Services.ProductsService
         Task<bool> IsProductInStockAsync(int productId);
         Task<decimal> GetProductPriceAsync(int productId);
         Task ApplyDiscountAsync(int productId, decimal discountPercentage);
+
+        
+        public TechXpressDbContext GetDbContext();
 
         // Advanced filtering
         Task<IEnumerable<ProductViewModel>> GetFilteredProductsAsync(
