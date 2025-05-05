@@ -115,8 +115,30 @@ namespace TechXpress.Web.Controllers
 
             try
             {
+                // Retrieve the product from the database
+                var product = await _productService.GetByIdAsync(request.ProductId);
+
+                // Check if the product exists
+                if (product == null)
+                {
+                    return NotFound("Product not found");
+                }
+
+                // Check if the requested quantity is available
+                if (request.Quantity > product.StockQuantity)
+                {
+                    // Return a message indicating insufficient stock
+                    if (Request.IsAjaxRequest())
+                    {
+                        return Json(new { success = false, message = $"Only {product.StockQuantity} items are in stock" });
+                    }
+
+                    TempData["ErrorMessage"] = $"Only {product.StockQuantity} items are available in stock.";
+                    return RedirectToAction("Index");
+                }
+
                 var cart = await GetOrCreateCartAsync();
-                 await _cartService.AddItemToCartAsync(cart.Id, request.ProductId, request.Quantity);
+                await _cartService.AddItemToCartAsync(cart.Id, request.ProductId, request.Quantity);
 
                 if (Request.IsAjaxRequest())
                 {
@@ -131,8 +153,6 @@ namespace TechXpress.Web.Controllers
                 }
 
                 ViewBag.CartItemCount = cart.Items.Sum(item => item.Quantity);
-
-
                 TempData["SuccessMessage"] = "Item added to cart successfully";
                 return RedirectToAction("Index");
             }
@@ -149,6 +169,7 @@ namespace TechXpress.Web.Controllers
                 return RedirectToAction("Index");
             }
         }
+
 
         [HttpPost("update")]
         [ValidateAntiForgeryToken]

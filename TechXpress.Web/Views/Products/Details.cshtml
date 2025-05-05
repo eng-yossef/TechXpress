@@ -50,7 +50,18 @@
                     {
                         <span class="badge bg-primary me-2">Featured</span>
                     }
-                    <span class="badge bg-success stock-badge">In Stock</span>
+                    @if (Model.Product.StockQuantity > 10)
+                    {
+                        <span class="badge bg-success stock-badge">In Stock</span>
+                    }
+                    else if (Model.Product.StockQuantity > 0)
+                    {
+                        <span class="badge bg-warning text-dark stock-badge">Only @Model.Product.StockQuantity left</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger stock-badge">Out of Stock</span>
+                    }
                 </div>
 
                 <h1 class="mb-3">@Model.Product.Name</h1>
@@ -140,12 +151,18 @@
                         <!-- Action Buttons -->
                         <div class="col-md-9">
                             <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary flex-grow-1">
+                                <button type="submit"
+                                        class="btn btn-primary flex-grow-1"
+                                @(Model.Product.StockQuantity == 0 ? "disabled title='Out of stock'" : "")>
                                     <i class="fas fa-shopping-cart me-2"></i> Add to Cart
                                 </button>
-                                <button type="button" class="btn btn-outline-danger buy-now-btn">
+
+                                <button type="button"
+                                        class="btn btn-outline-danger buy-now-btn"
+                                @(Model.Product.StockQuantity == 0 ? "disabled title='Out of stock'" : "")>
                                     <i class="fas fa-bolt me-2"></i> Buy Now
                                 </button>
+
                             </div>
                         </div>
                     </div>

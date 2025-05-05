@@ -38,18 +38,23 @@
     </div>
 
     <div class="card-footer bg-transparent d-flex flex-row gap-2">
-        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary btn-block">View Details</a>
+        <!-- View Details Button -->
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary btn-block" title="View Details">
+            <i class="fas fa-file-alt"></i>
+        </a>
 
         <!-- Add to Cart Button -->
         <form asp-controller="Cart" asp-action="AddToCart" method="post">
             <input type="hidden" name="productId" value="@Model.Id" />
-            <button type="submit" class="btn btn-success btn-block">
-                <i class="fas fa-cart-plus"></i> 
+            <button type="submit"
+                    class="btn btn-success btn-block"
+            @(Model.StockQuantity == 0 ? "disabled title='Out of stock'" : "title='Add to Cart'")>
+                <i class="fas fa-cart-plus"></i>
             </button>
         </form>
-
-    </div>
         <button class="btn btn-sm btn-outline-secondary quick-view-btn" data-product-id="@Model.Id">
             <i class="far fa-eye"></i>
         </button>
+    </div>
+
 </div>
