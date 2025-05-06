@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+
+#remove appsetting.json
+TechXpress.web/appsettings.json
+TechXpress.web/appsettings.Development.json
+TechXpress.web/appsettings.Production.json

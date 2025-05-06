@@ -9,6 +9,7 @@ using TechXpress.Data.Repositories.OrderDetailRepo;
 using TechXpress.Data.Repositories.OrderRepo;
 using TechXpress.Data.Repositories.ProductRepo;
 using TechXpress.Data.Repositories.ReviewRepo;
+using TechXpress.Data.Repositories.ShoppingCartRepo;
 using TechXpress.Data.UnitOfWork;
 using TechXpress.Services.CartItemsService;
 using TechXpress.Services.CategoriesService;
@@ -17,7 +18,6 @@ using TechXpress.Services.ProductsService;
 using TechXpress.Services.ReviewsService;
 using TechXpress.Services.OrdersDetailsService;
 using TechXpress.Services.ShoppingCartsService;
-using TechXpress.Data.Repositories.ShoppingCartRepo;
 using TechXpress.Web.Filters;
 using TechXpress.Web.Services.Interfaces;
 using TechXpress.Web.Services.Implementations;
@@ -29,18 +29,20 @@ namespace TechXpress.Web
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Load configuration from appsettings.json
             builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            // Updated DbContext registration with migrations assembly
+            // Configure the DbContext with migrations assembly
             builder.Services.AddDbContext<TechXpressDbContext>(options =>
                 options.UseSqlServer(
                     builder.Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly("TechXpress.Data")));
 
-            // Updated Identity configuration with custom ApplicationUser
+            // Configure Identity with ApplicationUser
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -53,7 +55,7 @@ namespace TechXpress.Web
             .AddEntityFrameworkStores<TechXpressDbContext>()
             .AddDefaultTokenProviders();
 
-            // Add Repositories Here
+            // Add repositories for data access
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -64,7 +66,7 @@ namespace TechXpress.Web
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 
-            // Add Services Here
+            // Add services for business logic
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICartItemService, CartItemService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
@@ -72,19 +74,18 @@ namespace TechXpress.Web
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IOrderDetailsService, OrderDetailsService>();
             builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
-            //IUserService
-            builder.Services.AddScoped<IUserService,UserService>();
-            // Fix for CS0311: Ensure AIAssistantService implements IAIAssistantService interface
-            // Register the HttpClient service
-            builder.Services.AddHttpClient();
+            builder.Services.AddScoped<IUserService, UserService>();
 
-            // Register AIAssistantService with dependency injection
+            // Add AI Services (Ensure these interfaces and implementations are defined correctly)
+            builder.Services.AddHttpClient();
             builder.Services.AddTransient<IAIAssistantService, AIAssistantService>();
             builder.Services.AddTransient<IAICommerceService, AICommerceAssistantService>();
-            builder.Services.AddTransient<IEmailSender, EmailSender>();
-            //Add filters 
-            builder.Services.AddScoped<UpdateCartItemCountFilter>();
 
+            // Email Sender Service
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+            // Add Filters (For example, UpdateCartItemCountFilter)
+            builder.Services.AddScoped<UpdateCartItemCountFilter>();
 
             var app = builder.Build();
 
@@ -101,22 +102,21 @@ namespace TechXpress.Web
             app.UseAuthentication();
             app.UseAuthorization();
 
-
-            //app.UseMiddleware<CartItemCountMiddleware>();
-
             // Add response caching services
             builder.Services.AddResponseCaching();
-
-            // Use response caching middleware
             app.UseResponseCaching();
+
+            // Configure endpoint routing for Areas (Admin section)
             app.UseEndpoints(endpoints =>
             {
+                // Areas routing with default controller action
                 endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    name: "areas",
+                    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}"
+                );
             });
 
-
+            // Default route (home page)
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");

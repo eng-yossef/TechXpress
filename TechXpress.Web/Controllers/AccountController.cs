@@ -18,12 +18,14 @@ namespace TechXpress.Web.Controllers
         private readonly IOrderService _orderService;
         private readonly IUserService _userService;
         private readonly IEmailSender _emailSender;
+        private readonly ILogger<AccountController> _logger;
 
 
         public AccountController(UserManager<ApplicationUser> userManager,
             IUserService userService,
             IOrderService orderService,
             IEmailSender emailSender,
+            ILogger<AccountController> logger,
             SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
@@ -31,6 +33,7 @@ namespace TechXpress.Web.Controllers
             _emailSender = emailSender;
             _orderService = orderService;
             _userService = userService;
+            _logger = logger;
         }
 
         // GET: /Account/Login
@@ -399,6 +402,19 @@ namespace TechXpress.Web.Controllers
         public IActionResult ResetPasswordConfirmation(string email)
         {
             return View(new ResetPasswordConfirmationViewModel { Email = email });
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            // Log the access denied attempt
+            _logger.LogWarning($"Access denied for user {User.Identity?.Name} at {DateTime.UtcNow}");
+
+            // You can customize the message based on the user's roles if needed
+            var userRoles = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value);
+            ViewData["UserRoles"] = string.Join(", ", userRoles);
+
+            return View();
         }
     }
     }
