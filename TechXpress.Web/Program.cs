@@ -29,6 +29,7 @@ namespace TechXpress.Web
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
@@ -73,7 +74,13 @@ namespace TechXpress.Web
             builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
             //IUserService
             builder.Services.AddScoped<IUserService,UserService>();
+            // Fix for CS0311: Ensure AIAssistantService implements IAIAssistantService interface
+            // Register the HttpClient service
+            builder.Services.AddHttpClient();
 
+            // Register AIAssistantService with dependency injection
+            builder.Services.AddTransient<IAIAssistantService, AIAssistantService>();
+            builder.Services.AddTransient<IAICommerceService, AICommerceAssistantService>();
             //Add filters 
             builder.Services.AddScoped<UpdateCartItemCountFilter>();
 

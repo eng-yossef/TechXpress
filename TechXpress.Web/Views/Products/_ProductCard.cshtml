@@ -1,4 +1,6 @@
-﻿@model TechXpress.Data.Models.ProductViewModel
+﻿@using TechXpress.Web.Services.Interfaces
+@model TechXpress.Data.Models.ProductViewModel
+@inject IAICommerceService AiCommerce
 
 <div class="card h-100 product-card">
     <div class="badge-container">
@@ -14,10 +16,7 @@
     <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name">
     <div class="card-body">
         <h5 class="card-title">@Model.Name</h5>
-
-        <!-- Display Category -->
         <p class="text-muted mb-2">Category: @Model.Category?.Name</p>
-
         <div class="d-flex justify-content-between align-items-center">
             <span class="text-primary font-weight-bold">@Model.Price.ToString("C")</span>
             @if (Model.Reviews.Any())
@@ -52,9 +51,18 @@
                 <i class="fas fa-cart-plus"></i>
             </button>
         </form>
+
+        <!-- Quick View Button -->
         <button class="btn btn-sm btn-outline-secondary quick-view-btn" data-product-id="@Model.Id">
             <i class="far fa-eye"></i>
         </button>
-    </div>
 
+        <!-- NEW: AI Description Button -->
+        <button class="btn btn-sm btn-outline-info ai-description-btn"
+                data-product-id="@Model.Id"
+                title="AI Description">
+            <i class="fas fa-robot"></i>
+        </button>
+    </div>
 </div>
+

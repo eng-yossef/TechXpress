@@ -61,5 +61,10 @@ namespace TechXpress.Data.Models
             ChildCategories = new HashSet<Category>();
             Products = new HashSet<ProductViewModel>();
         }
+
+        public static implicit operator Category(string v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
