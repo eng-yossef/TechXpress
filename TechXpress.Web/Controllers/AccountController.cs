@@ -37,6 +37,7 @@ namespace TechXpress.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                TempData["ErrorMessage"] = "Invalid login attempt. Please try again.";
                 return View(model);  // Invalid model
             }
 
@@ -65,6 +66,8 @@ namespace TechXpress.Web.Controllers
                 // Sign out basic identity session and sign in again with claims
                 await _signInManager.SignOutAsync();
                 await _signInManager.SignInWithClaimsAsync(user, model.RememberMe, claims);
+                //Welcome by name
+                TempData["SuccessMessage"] =$"Welcome Back {user.FirstName} !" ;
 
                 return RedirectToAction("Index", "Home");
             }
@@ -169,6 +172,10 @@ namespace TechXpress.Web.Controllers
         public async Task<IActionResult> UpdateProfile(AccountViewModel model)
         {
             var user = await _userManager.GetUserAsync(User);
+            ModelState.Remove(nameof(model.Id));
+            ModelState.Remove(nameof(model.UserName));
+            ModelState.Remove(nameof(model.AccountStatus));
+            ModelState.Remove(nameof(model.ProfilePictureUrl));
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
