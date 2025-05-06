@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using TechXpress.Data.Models;
 using TechXpress.Services.OrdersService;
 using TechXpress.Web.Models;
@@ -15,15 +17,18 @@ namespace TechXpress.Web.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IOrderService _orderService;
         private readonly IUserService _userService;
+        private readonly IEmailSender _emailSender;
 
 
         public AccountController(UserManager<ApplicationUser> userManager,
             IUserService userService,
-            IOrderService orderService, 
+            IOrderService orderService,
+            IEmailSender emailSender,
             SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailSender = emailSender;
             _orderService = orderService;
             _userService = userService;
         }
@@ -67,7 +72,7 @@ namespace TechXpress.Web.Controllers
                 await _signInManager.SignOutAsync();
                 await _signInManager.SignInWithClaimsAsync(user, model.RememberMe, claims);
                 //Welcome by name
-                TempData["SuccessMessage"] =$"Welcome Back {user.FirstName} !" ;
+                TempData["SuccessMessage"] = $"Welcome Back {user.FirstName} !";
 
                 return RedirectToAction("Index", "Home");
             }
@@ -299,5 +304,101 @@ namespace TechXpress.Web.Controllers
         }
 
 
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                {
+                    // Don't reveal that the user does not exist or is not confirmed
+                    return RedirectToAction(nameof(ForgotPasswordConfirmation), new { email = model.Email });
+                }
+
+                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var callbackUrl = Url.Action(
+       action: nameof(ResetPassword),
+       controller: "Account",
+       values: new { userId = user.Id, code, email = model.Email }, // Include email here
+       protocol: Request.Scheme);
+
+                await _emailSender.SendEmailAsync(
+                    model.Email,
+                    "Reset Password - TechXpress",
+                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                return RedirectToAction(nameof(ForgotPasswordConfirmation), new { email = model.Email });
+            }
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult ForgotPasswordConfirmation(string email)
+        {
+            return View(new ForgotPasswordConfirmationViewModel { Email = email });
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPassword(string code = null, string email = null)
+        {
+            if (code == null)
+            {
+                return BadRequest("A code must be supplied for password reset.");
+            }
+
+            var model = new ResetPasswordViewModel
+            {
+                Code = code,
+                Email = email // Pre-fill email if provided
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                // Don't reveal that the user does not exist
+                return RedirectToAction(nameof(ResetPasswordConfirmation));
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(ResetPasswordConfirmation), new { email = model.Email });
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return View(model);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPasswordConfirmation(string email)
+        {
+            return View(new ResetPasswordConfirmationViewModel { Email = email });
+        }
     }
-}
+    }

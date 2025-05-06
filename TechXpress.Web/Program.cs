@@ -81,6 +81,7 @@ namespace TechXpress.Web
             // Register AIAssistantService with dependency injection
             builder.Services.AddTransient<IAIAssistantService, AIAssistantService>();
             builder.Services.AddTransient<IAICommerceService, AICommerceAssistantService>();
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
             //Add filters 
             builder.Services.AddScoped<UpdateCartItemCountFilter>();
 

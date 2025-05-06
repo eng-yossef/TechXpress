@@ -1,4 +1,4 @@
-﻿:root {
+﻿/*:root {
     --primary-color: #4e73df;
     --primary-dark: #2e59d9;
     --secondary-color: #858796;
@@ -277,10 +277,10 @@ body {
 
         .auth-footer a:hover {
             text-decoration: underline;
-        }
+        }*/
 
 /* Responsive adjustments */
-@media (max-width: 992px) {
+/*@media (max-width: 992px) {
     .auth-card {
         flex-direction: column;
         height: auto;
@@ -304,4 +304,4 @@ body {
     .auth-right-panel {
         padding: 20px;
     }
-}
+}*/
