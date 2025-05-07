@@ -10,7 +10,7 @@
         <div class="col-lg-4">
             <div class="card shadow-sm mb-4">
                 <div class="card-body text-center">
-                    <img src="@(Model.ProfilePictureUrl??"/images/download.jpeg")" alt="Profile" class="rounded-circle mb-3" width="150" height="150" />
+                    <img src="@(Model?.ProfilePictureUrl ?? "/images/download.jpeg")" alt="Profile" class="rounded-circle mb-3" width="150" height="150" />
                     <h4 class="card-title">@Model.FirstName @Model.LastName</h4>
                     <p class="text-muted mb-1">@Model.UserName</p>
                     <p class="text-muted mb-4">Member since @Model.AccountCreated.ToString("MMMM yyyy")</p>
@@ -170,7 +170,7 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                                                <a asp-controller="Orders" asp-action="Details" asp-route-Id="@order.OrderId" class="btn btn-sm btn-outline-primary">View</a>
                                             </td>
                                         </tr>
                                     }

@@ -349,6 +349,24 @@ namespace TechXpress.Web.Controllers
                     return RedirectToAction("Index");
                 }
 
+                // Get current user's profile data
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var user = await _unitOfWork.Context.Users.FindAsync(userId);
+
+                // Create shipping address from user profile
+                var shippingAddress = new AddressViewModel
+                {
+                    FirstName = user?.FirstName ?? "Not Provided",
+                    LastName = user?.LastName ?? "Not Provided",
+                    AddressLine1 = user?.AddressLine1 ?? "Not Provided",
+                    AddressLine2 = user?.AddressLine2 ?? string.Empty,
+                    City = user?.City ?? "Unknown City",
+                    State = user?.State ?? "Unknown State",
+                    ZipCode = user?.PostalCode ?? "00000",
+                    Country = user?.Country ?? "US",
+                    PhoneNumber = user?.PhoneNumber ?? "Not Provided"
+                };
+
                 var checkoutViewModel = new CheckoutViewModel
                 {
                     Cart = new CartViewModel
@@ -372,15 +390,15 @@ namespace TechXpress.Web.Controllers
                         Shipping = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity) > 50 ? 0m : 5.99m, // Free shipping over $50
                         Total = 0m // Calculated below
                     },
-                    ShippingAddress = new AddressViewModel(),
+                    ShippingAddress = shippingAddress,
                     BillingAddress = new AddressViewModel(),
+                    
                     PaymentMethod = "CreditCard"
                 };
 
                 checkoutViewModel.Cart.Total = checkoutViewModel.Cart.Subtotal +
                                              checkoutViewModel.Cart.Tax +
                                              checkoutViewModel.Cart.Shipping;
-
 
                 return View(checkoutViewModel);
             }
@@ -391,7 +409,6 @@ namespace TechXpress.Web.Controllers
                 return RedirectToAction("Index");
             }
         }
-
         //[Authorize]
         //[HttpPost("checkout")]
         //[ValidateAntiForgeryToken]

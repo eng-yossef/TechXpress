@@ -181,19 +181,19 @@
                         <span>@Model.TotalAmount.ToString("C")</span>
                     </div>
 
-                    @if (Model.OrderStatus == OrderStatus.Pending)
-                    {
-                        <form asp-action="ProcessPayment" method="post" class="mt-4">
-                            <input type="hidden" name="id" value="@Model.Id" />
-                            <div class="mb-3">
-                                <label for="paymentTransactionId" class="form-label">Payment Transaction ID</label>
-                                <input type="text" name="paymentTransactionId" class="form-control" required />
-                            </div>
-                            <button type="submit" class="btn btn-success w-100 py-2">
-                                <i class="fas fa-check-circle me-2"></i>Complete Payment
-                            </button>
-                        </form>
-                    }
+                    @* @if (Model.OrderStatus == OrderStatus.Pending) *@
+                    @* { *@
+                    @*     <form asp-action="ProcessPayment" method="post" class="mt-4"> *@
+                    @*         <input type="hidden" name="id" value="@Model.Id" /> *@
+                    @*         <div class="mb-3"> *@
+                    @*             <label for="paymentTransactionId" class="form-label">Payment Transaction ID</label> *@
+                    @*             <input type="text" name="paymentTransactionId" class="form-control" required /> *@
+                    @*         </div> *@
+                    @*         <button type="submit" class="btn btn-success w-100 py-2"> *@
+                    @*             <i class="fas fa-check-circle me-2"></i>Complete Payment *@
+                    @*         </button> *@
+                    @*     </form> *@
+                    @* } *@
                 </div>
             </div>
 

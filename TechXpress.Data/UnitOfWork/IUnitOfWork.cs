@@ -28,9 +28,9 @@ namespace TechXpress.Data.UnitOfWork
 
         IShoppingCartRepository ShoppingCarts { get; } 
 
-        IPaymentRepository Payments { get; } // Expose the payment repository
+        IPaymentRepository Payments { get; } 
 
-        Task<int> CompleteAsync(); // Async version of SaveChanges
+        Task<int> CompleteAsync(); 
 
 
     }
