@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -14,12 +15,20 @@ namespace TechXpress.Services.OrdersService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IOrderRepository _orderRepository;
+        //_userManager 
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public OrderService(IUnitOfWork unitOfWork)
+
+        public OrderService(IUnitOfWork unitOfWork,
+            UserManager<ApplicationUser> userManager
+            )
             : base(unitOfWork.Orders)
         {
             _unitOfWork = unitOfWork;
             _orderRepository = unitOfWork.Orders as IOrderRepository;
+            _userManager = userManager;
+
+
         }
 
         public async Task<string> Test()
@@ -32,10 +41,26 @@ namespace TechXpress.Services.OrdersService
         }
 
         //AddOrderAsync
+        //public async Task<Order> AddOrderAsync(Order order)
+        //{
+        //    // Load user entity by ID
+        //    var user = await _userManager.FindByIdAsync(order.UserId);
+
+        //    if (user == null)
+        //        throw new Exception("User not found");
+
+        //    order.User = user; // assign navigation property
+
+        //    await _unitOfWork.Orders.AddOrderAsync(order);
+        //    return order;
+        //}
+
         public async Task<Order> AddOrderAsync(Order order)
         {
+            if (string.IsNullOrEmpty(order.UserId))
+                throw new ArgumentException("UserId must be set before saving the order.");
+
             await _unitOfWork.Orders.AddOrderAsync(order);
-            //await _unitOfWork.CompleteAsync();
             return order;
         }
 

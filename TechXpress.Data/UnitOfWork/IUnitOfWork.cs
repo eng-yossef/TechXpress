@@ -8,6 +8,7 @@ using TechXpress.Data.Repositories.CartItemRepo;
 using TechXpress.Data.Repositories.CategoryRepo;
 using TechXpress.Data.Repositories.OrderDetailRepo;
 using TechXpress.Data.Repositories.OrderRepo;
+using TechXpress.Data.Repositories.PaymentRepo;
 using TechXpress.Data.Repositories.ProductRepo;
 using TechXpress.Data.Repositories.ReviewRepo;
 using TechXpress.Data.Repositories.ShoppingCartRepo;
@@ -26,6 +27,8 @@ namespace TechXpress.Data.UnitOfWork
         ICartItemRepository CartItems { get; }
 
         IShoppingCartRepository ShoppingCarts { get; } 
+
+        IPaymentRepository Payments { get; } // Expose the payment repository
 
         Task<int> CompleteAsync(); // Async version of SaveChanges
 

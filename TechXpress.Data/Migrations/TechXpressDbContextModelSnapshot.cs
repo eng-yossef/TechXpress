@@ -192,7 +192,7 @@ namespace TechXpress.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Addresses");
+                    b.ToTable("Addresses", (string)null);
                 });
 
             modelBuilder.Entity("TechXpress.Data.Models.ApplicationUser", b =>
@@ -316,7 +316,7 @@ namespace TechXpress.Data.Migrations
 
                     b.HasIndex("ShoppingCartId");
 
-                    b.ToTable("CartItems");
+                    b.ToTable("CartItems", (string)null);
                 });
 
             modelBuilder.Entity("TechXpress.Data.Models.Category", b =>
@@ -384,7 +384,7 @@ namespace TechXpress.Data.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("TechXpress.Data.Models.Order", b =>
@@ -439,7 +439,7 @@ namespace TechXpress.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("TechXpress.Data.Models.OrderDetail", b =>
@@ -469,7 +469,7 @@ namespace TechXpress.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("OrderDetails", (string)null);
                 });
 
             modelBuilder.Entity("TechXpress.Data.Models.Payment", b =>
@@ -529,7 +529,7 @@ namespace TechXpress.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("TechXpress.Data.Models.ProductSpecification", b =>
@@ -555,7 +555,7 @@ namespace TechXpress.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductSpecification");
+                    b.ToTable("ProductSpecification", (string)null);
                 });
 
             modelBuilder.Entity("TechXpress.Data.Models.ProductViewModel", b =>
@@ -611,7 +611,7 @@ namespace TechXpress.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("TechXpress.Data.Models.Review", b =>
@@ -648,7 +648,7 @@ namespace TechXpress.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("TechXpress.Data.Models.ShoppingCart", b =>
@@ -668,7 +668,7 @@ namespace TechXpress.Data.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("ShoppingCarts");
+                    b.ToTable("ShoppingCarts", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -15,6 +15,8 @@ using TechXpress.Services.OrdersDetailsService;
 using TechXpress.Services.OrdersService;
 using Microsoft.EntityFrameworkCore;
 using TechXpress.Services.ProductsService;
+using TechXpress.Data.UnitOfWork;
+using TechXpress.Services.Payment;
 //using TechXpress.Web.Extensions;
 
 namespace TechXpress.Web.Controllers
@@ -29,6 +31,8 @@ namespace TechXpress.Web.Controllers
         private readonly IOrderDetailsService _orderDetailsService;
         private readonly IOrderService _orderService;
         private readonly IProductService _productService;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IStripeService _stripeService;
 
         private const string SessionCartIdKey = "CartId";
 
@@ -39,6 +43,9 @@ namespace TechXpress.Web.Controllers
             IOrderDetailsService orderDetailsService,
             IOrderService orderService,
             IProductService  productService,
+            IUnitOfWork unitOfWork,
+            IStripeService stripeService,
+
 
             ILogger<CartController> logger)
         {
@@ -48,6 +55,8 @@ namespace TechXpress.Web.Controllers
             _orderDetailsService = orderDetailsService;
             _orderService = orderService;
             _productService = productService;
+            _stripeService = stripeService;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
@@ -383,6 +392,139 @@ namespace TechXpress.Web.Controllers
             }
         }
 
+        //[Authorize]
+        //[HttpPost("checkout")]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> ProcessCheckout([FromForm] CheckoutViewModel model)
+        //{
+        //    if (model.SameAsShipping)
+        //    {
+        //        ModelState.Remove("BillingAddress.FirstName");
+        //        ModelState.Remove("BillingAddress.LastName");
+        //        ModelState.Remove("BillingAddress.AddressLine1");
+        //        ModelState.Remove("BillingAddress.AddressLine2");
+        //        ModelState.Remove("BillingAddress.City");
+        //        ModelState.Remove("BillingAddress.State");
+        //        ModelState.Remove("BillingAddress.ZipCode");
+        //        ModelState.Remove("BillingAddress.Country");
+        //        ModelState.Remove("BillingAddress.PhoneNumber");
+
+        //        model.BillingAddress = model.ShippingAddress;
+        //    }
+
+        //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        //    var cart = await _cartService.GetOrCreateUserCartAsync(userId,includeItems: true);
+        //    if (cart == null || cart.Items == null || !cart.Items.Any())
+        //    {
+        //        TempData["ErrorMessage"] = "Your cart is empty.";
+        //        return RedirectToAction("Index", "Cart");
+        //    }
+
+        //    decimal subtotal = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity);
+        //    decimal tax = subtotal * 0.1m;
+        //    decimal shipping = subtotal > 50 ? 0m : 5.99m;
+        //    decimal totalAmount = subtotal + tax + shipping;
+
+        //    if (!ModelState.IsValid)
+        //    {
+        //        model.Cart = new CartViewModel
+        //        {
+        //            CartId = cart.Id.ToString(),
+        //            Items = cart.Items.Select(item => new CartItemViewModel
+        //            {
+        //                ItemId = item.Id.ToString(),
+        //                Quantity = item.Quantity,
+        //                Product = new ProductViewModel
+        //                {
+        //                    Id = item.ProductId,
+        //                    Name = item.Product?.Name,
+        //                    Price = item.Product?.Price ?? 0m
+        //                },
+        //                TotalPrice = (int)((item.Product?.Price ?? 0m) * item.Quantity)
+        //            }).ToList(),
+        //            Subtotal = subtotal,
+        //            Tax = tax,
+        //            Shipping = shipping,
+        //            Total = totalAmount
+        //        };
+
+        //        ViewData["ErrorMessage"] = "There are errors in the form. Please review your information.";
+        //        return View("Checkout", model);
+        //    }
+
+
+
+
+        //    // Use your shared DbContext from services if accessible
+        //    var dbContext = _productService.GetDbContext(); // You must expose it in your service
+        //    using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        // 1. Process payment (mocked for demo)
+        //        if (!ProcessPayment(model))
+        //        {
+        //            TempData["ErrorMessage"] = "Payment processing failed. Please try again.";
+        //            return RedirectToAction("Checkout");
+        //        }
+
+        //        // 1. Check and decrease product quantity
+        //        foreach (var item in cart.Items)
+        //        {
+        //            var product = await _productService.GetByIdAsync(item.ProductId);
+        //            if (product == null || product.StockQuantity < item.Quantity)
+        //            {
+        //                TempData["ErrorMessage"] = $"Not enough stock for {product?.Name ?? "a product"}.";
+        //                return RedirectToAction("Checkout");
+        //            }
+
+        //            product.StockQuantity -= item.Quantity;
+        //            await _productService.UpdateAsync(product);
+        //        }
+
+        //        // 2. Create Order
+        //        var order = new Order
+        //        {
+        //            UserId = userId,
+        //            ShippingAddress = model.ShippingAddress,
+        //            PaymentStatus = PaymentStatus.Pending,
+        //            OrderStatus = OrderStatus.Pending,
+        //            OrderDate = DateTime.UtcNow,
+        //            TotalAmount = totalAmount
+        //        };
+
+        //        await _orderService.AddOrderAsync(order);
+
+        //        // 3. Create OrderDetails
+        //        var orderDetails = cart.Items.Select(item => new OrderDetail
+        //        {
+        //            OrderId = order.Id,
+        //            ProductId = item.ProductId,
+        //            Quantity = item.Quantity,
+        //            Price = item.Product?.Price ?? 0m
+        //        });
+
+        //        await _orderDetailsService.AddRangeAsync(orderDetails);
+
+        //        // 4. Clear Cart
+        //        await _cartService.ClearCartAsync(cart.Id);
+
+        //        // 5. Commit transaction
+        //        await transaction.CommitAsync();
+
+        //        TempData["SuccessMessage"] = "Order placed successfully!";
+        //        return RedirectToAction("Index", "Orders");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        _logger.LogError(ex, "Error processing checkout.");
+        //        TempData["ErrorMessage"] = "There was an error processing your order. Please try again.";
+        //        return RedirectToAction("Checkout");
+        //    }
+        //}
+
         [Authorize]
         [HttpPost("checkout")]
         [ValidateAntiForgeryToken]
@@ -390,22 +532,11 @@ namespace TechXpress.Web.Controllers
         {
             if (model.SameAsShipping)
             {
-                ModelState.Remove("BillingAddress.FirstName");
-                ModelState.Remove("BillingAddress.LastName");
-                ModelState.Remove("BillingAddress.AddressLine1");
-                ModelState.Remove("BillingAddress.AddressLine2");
-                ModelState.Remove("BillingAddress.City");
-                ModelState.Remove("BillingAddress.State");
-                ModelState.Remove("BillingAddress.ZipCode");
-                ModelState.Remove("BillingAddress.Country");
-                ModelState.Remove("BillingAddress.PhoneNumber");
-
                 model.BillingAddress = model.ShippingAddress;
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var cart = await _cartService.GetOrCreateUserCartAsync(userId,includeItems: true);
+            var cart = await _cartService.GetOrCreateUserCartAsync(userId, includeItems: true);
             if (cart == null || cart.Items == null || !cart.Items.Any())
             {
                 TempData["ErrorMessage"] = "Your cart is empty.";
@@ -419,6 +550,7 @@ namespace TechXpress.Web.Controllers
 
             if (!ModelState.IsValid)
             {
+                // return checkout view with error
                 model.Cart = new CartViewModel
                 {
                     CartId = cart.Id.ToString(),
@@ -439,74 +571,43 @@ namespace TechXpress.Web.Controllers
                     Shipping = shipping,
                     Total = totalAmount
                 };
-
-                ViewData["ErrorMessage"] = "There are errors in the form. Please review your information.";
                 return View("Checkout", model);
             }
 
-
-            // Use your shared DbContext from services if accessible
-            var dbContext = _productService.GetDbContext(); // You must expose it in your service
-            using var transaction = await dbContext.Database.BeginTransactionAsync();
-
-            try
+            // Create order (but DO NOT decrease stock or set payment status)
+            var order = new Order
             {
-                // 1. Check and decrease product quantity
-                foreach (var item in cart.Items)
-                {
-                    var product = await _productService.GetByIdAsync(item.ProductId);
-                    if (product == null || product.StockQuantity < item.Quantity)
-                    {
-                        TempData["ErrorMessage"] = $"Not enough stock for {product?.Name ?? "a product"}.";
-                        return RedirectToAction("Checkout");
-                    }
+                UserId = userId,
+                ShippingAddress = model.ShippingAddress,
+                PaymentStatus = PaymentStatus.Pending,
+                OrderStatus = OrderStatus.Pending,
+                OrderDate = DateTime.UtcNow,
+                TotalAmount = totalAmount,
+                User=null
+            };
+            await _orderService.AddOrderAsync(order);
 
-                    product.StockQuantity -= item.Quantity;
-                    await _productService.UpdateAsync(product);
-                }
-
-                // 2. Create Order
-                var order = new Order
-                {
-                    UserId = userId,
-                    ShippingAddress = model.ShippingAddress,
-                    PaymentStatus = PaymentStatus.Pending,
-                    OrderStatus = OrderStatus.Pending,
-                    OrderDate = DateTime.UtcNow,
-                    TotalAmount = totalAmount
-                };
-
-                await _orderService.AddOrderAsync(order);
-
-                // 3. Create OrderDetails
-                var orderDetails = cart.Items.Select(item => new OrderDetail
-                {
-                    OrderId = order.Id,
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    Price = item.Product?.Price ?? 0m
-                });
-
-                await _orderDetailsService.AddRangeAsync(orderDetails);
-
-                // 4. Clear Cart
-                await _cartService.ClearCartAsync(cart.Id);
-
-                // 5. Commit transaction
-                await transaction.CommitAsync();
-
-                TempData["SuccessMessage"] = "Order placed successfully!";
-                return RedirectToAction("Index", "Orders");
-            }
-            catch (Exception ex)
+            // Create order details
+            var orderDetails = cart.Items.Select(item => new OrderDetail
             {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error processing checkout.");
-                TempData["ErrorMessage"] = "There was an error processing your order. Please try again.";
-                return RedirectToAction("Checkout");
-            }
+                OrderId = order.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                Price = item.Product?.Price ?? 0m
+            });
+            await _orderDetailsService.AddRangeAsync(orderDetails);
+
+            await _unitOfWork.CompleteAsync();
+
+            // Create Stripe PaymentIntent
+            //var amountInCents = (long)(totalAmount);
+            //var intent = await _stripeService.CreatePaymentIntentAsync(amountInCents, userId, order.Id);
+
+            // Redirect to payment page (pass intent + orderId)
+            //return RedirectToAction( "Payment", new { Id = order.Id, intentId = intent.Id });
+            return RedirectToAction("Index", "Payment", new { Id = order.Id});
+
         }
-
 
         // ---------------------------- Merge Guest Cart on Login ----------------------------
 

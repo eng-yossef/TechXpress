@@ -108,16 +108,18 @@ namespace TechXpress.Web.Controllers
                 Email = model.Email,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                EmailConfirmed = true // Optional: you can set this depending on your logic
+                EmailConfirmed = true
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
             {
+                // Assign "Customer" role to the new user
+                await _userManager.AddToRoleAsync(user, "Customer");
 
-                await _signInManager.SignInAsync(user, isPersistent: false);
                 user.AccountCreated = DateTime.UtcNow;
+                await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");
             }
 
@@ -322,7 +324,6 @@ namespace TechXpress.Web.Controllers
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
                 {
-                    // Don't reveal that the user does not exist or is not confirmed
                     return RedirectToAction(nameof(ForgotPasswordConfirmation), new { email = model.Email });
                 }
 

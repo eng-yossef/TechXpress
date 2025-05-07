@@ -101,19 +101,22 @@ namespace TechXpress.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // Validate user permissions
-                //if (order.UserId != User.Identity.Name && !User.IsInRole("Admin"))
-                //{
-                //    TempData["ErrorMessage"] = "You don't have permission to update this order.";
-                //    return RedirectToAction("Index");
-                //}
+                //Validate user permissions
+                var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (order.UserId != currentUserId && !User.IsInRole("Admin"))
+                {
+                    TempData["ErrorMessage"] = "You don't have permission to update this order.";
+                    return RedirectToAction("Index");
+                }
 
                 // Additional validation for customers
-                //if (!User.IsInRole("Admin") && status != OrderStatus.Cancelled)
-                //{
-                //    TempData["ErrorMessage"] = "You can only cancel orders.";
-                //    return RedirectToAction("Details", new { id });
-                //}
+                if (!User.IsInRole("Admin") && status != OrderStatus.Cancelled)
+                {
+                    TempData["ErrorMessage"] = "You can only cancel orders.";
+                    return RedirectToAction("Details", new { id });
+                }
+
 
                 await _orderService.UpdateOrderStatusAsync(id, status, adminNotes);
                 TempData["SuccessMessage"] = "Order status updated successfully!";

@@ -1,0 +1,32 @@
+﻿@model IEnumerable<TechXpress.Data.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "User Management";
+	Layout = "_AdminLayout";
+    @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+}
+
+<h2>User Management</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>User Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.UserName</td>
+                <td>
+                    <a asp-area="Admin" asp-controller="UserRoleManagement" asp-action="Manage" asp-route-userId="@user.Id">
+                        Manage Roles
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

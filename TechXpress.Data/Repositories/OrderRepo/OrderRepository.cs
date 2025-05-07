@@ -50,8 +50,10 @@ namespace TechXpress.Data.Repositories.OrderRepo
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Product)
                 .Include(o => o.Payments)
+                .Include(o => o.ShippingAddress) // ✅ Include this line
                 .FirstOrDefaultAsync(o => o.Id == orderId);
         }
+
 
         public async Task<IEnumerable<Order>> GetOrdersByUserAsync(string userId)
         {
@@ -143,23 +145,85 @@ namespace TechXpress.Data.Repositories.OrderRepo
 
         public async Task UpdateOrderStatusAsync(int orderId, OrderStatus newStatus, string adminNotes = null)
         {
-            var order = await _context.Set<Order>().FindAsync(orderId);
-            if (order != null)
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+                throw new ArgumentException($"Order with ID {orderId} not found");
+
+            var previousStatus = order.OrderStatus;
+
+            try
             {
                 order.OrderStatus = newStatus;
                 order.LastUpdated = DateTime.UtcNow;
 
-                if (!string.IsNullOrEmpty(adminNotes))
+                AppendAdminNote(order, adminNotes);
+
+                if (newStatus == OrderStatus.Cancelled && previousStatus != OrderStatus.Cancelled)
                 {
-                    order.AdminNotes = string.IsNullOrEmpty(order.AdminNotes)
-                        ? adminNotes
-                        : $"{order.AdminNotes}\n{adminNotes}";
+                    RestoreInventory(order);
+                }
+                else if (previousStatus == OrderStatus.Cancelled && newStatus != OrderStatus.Cancelled)
+                {
+                    DeductInventory(order);
                 }
 
-                _context.Set<Order>().Update(order);
+
                 await _context.SaveChangesAsync();
             }
+            catch (Exception ex)
+            {
+                //_logger.LogError(ex, "Error updating order status for order {OrderId}", orderId);
+                throw;
+            }
         }
+
+        private void AppendAdminNote(Order order, string adminNotes)
+        {
+            if (!string.IsNullOrWhiteSpace(adminNotes))
+            {
+                var note = $"{DateTime.UtcNow:yyyy-MM-dd HH:mm}: {adminNotes}";
+                order.AdminNotes = string.IsNullOrWhiteSpace(order.AdminNotes)
+                    ? note
+                    : $"{order.AdminNotes}\n{note}";
+            }
+        }
+
+        private void RestoreInventory(Order order)
+        {
+            foreach (var item in order.OrderDetails)
+            {
+                var product = item.Product;
+                int prevQty = product.StockQuantity;
+
+                product.StockQuantity += item.Quantity;
+                product.UpdatedAt = DateTime.UtcNow;
+
+            }
+        }
+
+        private void DeductInventory(Order order)
+        {
+            foreach (var item in order.OrderDetails)
+            {
+                var product = item.Product;
+                if (product.StockQuantity < item.Quantity)
+                    throw new InvalidOperationException($"Not enough stock for Product ID {product.Id}");
+
+                int prevQty = product.StockQuantity;
+
+                product.StockQuantity -= item.Quantity;
+                product.UpdatedAt = DateTime.UtcNow;
+
+            }
+        }
+
+      
+
+   
 
         public async Task AddOrderNoteAsync(int orderId, string note, bool isAdminNote = false)
         {
@@ -208,17 +272,21 @@ namespace TechXpress.Data.Repositories.OrderRepo
                 .AnyAsync(o => o.Id == orderId && o.PaymentStatus == PaymentStatus.Completed);
         }
 
-        Task IOrderRepository.AddOrderAsync(Order order)
+        public async Task AddOrderAsync(Order order)
         {
-            // Detach any existing User entity if it exists
+            if (string.IsNullOrEmpty(order.UserId))
+                throw new ArgumentException("UserId must be set before saving the order.");
+
+            // Detach any existing User navigation property if it's already being tracked
             if (order.User != null && _context.Entry(order.User).State != EntityState.Detached)
             {
                 _context.Entry(order.User).State = EntityState.Detached;
             }
 
             _context.Orders.Add(order);
-            return _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
+
 
     }
 }

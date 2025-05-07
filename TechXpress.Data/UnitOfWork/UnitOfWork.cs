@@ -9,6 +9,7 @@ using TechXpress.Data.Repositories.CartItemRepo;
 using TechXpress.Data.Repositories.CategoryRepo;
 using TechXpress.Data.Repositories.OrderDetailRepo;
 using TechXpress.Data.Repositories.OrderRepo;
+using TechXpress.Data.Repositories.PaymentRepo;
 using TechXpress.Data.Repositories.ProductRepo;
 using TechXpress.Data.Repositories.ReviewRepo;
 using TechXpress.Data.Repositories.ShoppingCartRepo;
@@ -32,6 +33,8 @@ namespace TechXpress.Data.UnitOfWork
 
         public IShoppingCartRepository ShoppingCarts { get; set; }
 
+        public IPaymentRepository Payments { get; set; }
+
         public UnitOfWork(
             TechXpressDbContext context,
             IProductRepository productRepository,
@@ -40,6 +43,8 @@ namespace TechXpress.Data.UnitOfWork
             IOrderDetailRepository orderDetailsRepository,
             ICartItemRepository cartItemRepository,
             IShoppingCartRepository shoppingCartRepository,
+            IPaymentRepository paymentRepository,
+
             IReviewRepository reviewRepository)
         {
             _context = context;
@@ -50,6 +55,7 @@ namespace TechXpress.Data.UnitOfWork
             Reviews = reviewRepository;
             ShoppingCarts = shoppingCartRepository;
             CartItems = cartItemRepository;
+            Payments = paymentRepository;
         }
 
         public async Task<int> CompleteAsync()

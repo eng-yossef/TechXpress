@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using StripeOrg=Stripe;
 using TechXpress.Data.Models;
 using TechXpress.Data.Models.Contexts;
 using TechXpress.Data.Repositories.CartItemRepo;
@@ -21,6 +22,9 @@ using TechXpress.Services.ShoppingCartsService;
 using TechXpress.Web.Filters;
 using TechXpress.Web.Services.Interfaces;
 using TechXpress.Web.Services.Implementations;
+using TechXpress.Web.Areas.Admin.Services;
+using TechXpress.Services.Payment;
+using TechXpress.Data.Repositories.PaymentRepo;
 
 namespace TechXpress.Web
 {
@@ -55,6 +59,8 @@ namespace TechXpress.Web
             .AddEntityFrameworkStores<TechXpressDbContext>()
             .AddDefaultTokenProviders();
 
+
+
             // Add repositories for data access
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -65,6 +71,7 @@ namespace TechXpress.Web
             builder.Services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+
 
             // Add services for business logic
             builder.Services.AddScoped<IProductService, ProductService>();
@@ -81,13 +88,31 @@ namespace TechXpress.Web
             builder.Services.AddTransient<IAIAssistantService, AIAssistantService>();
             builder.Services.AddTransient<IAICommerceService, AICommerceAssistantService>();
 
+
+
+            // Add Stripe settings
+            // Configure Stripe settings and register StripeSettings instance
+            var stripeSettingsSection = builder.Configuration.GetSection("Stripe");
+            builder.Services.Configure<StripeSettings>(stripeSettingsSection);
+            builder.Services.AddSingleton(stripeSettingsSection.Get<StripeSettings>());
+
+            builder.Services.AddScoped<IStripeService, StripeService>();
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+
+
             // Email Sender Service
             builder.Services.AddTransient<IEmailSender, EmailSender>();
 
             // Add Filters (For example, UpdateCartItemCountFilter)
             builder.Services.AddScoped<UpdateCartItemCountFilter>();
 
+            //Admin Area Services
+            builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+
             var app = builder.Build();
+
+            var stripeSettings = app.Services.GetRequiredService<StripeSettings>();
+            StripeOrg.StripeConfiguration.ApiKey = stripeSettings.SecretKey;
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
