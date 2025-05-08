@@ -54,7 +54,7 @@ namespace TechXpress.Data.Models
 
 
 
-        public virtual ICollection<ProductSpecification>? Specifications { get; set; }
+        public virtual List<ProductSpecification>? Specifications { get; set; }
 
 
 

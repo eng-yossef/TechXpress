@@ -84,6 +84,7 @@ namespace TechXpress.Web
             builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ICustomerService, CustomerService>(); // Register the service
+            builder.Services.AddScoped<Areas.Admin.Services.IImageService, Areas.Admin.Services.ImageService>();
 
 
             // Add AI Services (Ensure these interfaces and implementations are defined correctly)

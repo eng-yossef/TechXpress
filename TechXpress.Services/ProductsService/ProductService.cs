@@ -94,9 +94,78 @@ namespace TechXpress.Services.ProductsService
             return products.FirstOrDefault(p => p.Id == productId);
         }
 
+        public async Task<IEnumerable<ProductViewModel>> GetAllProductsWithCategoriesAsync()
+        {
+            return await _productRepository.GetProductsWithCategoryAsync();
+        }
+
+        public async Task UpdateAsync(ProductViewModel model)
+        {
+            var product = await GetDbContext().Products
+                .Include(p => p.Specifications)
+                .FirstOrDefaultAsync(p => p.Id == model.Id);
+
+            if (product == null) return;
+
+            // Update main product fields
+            product.Name = model.Name;
+            product.Description = model.Description;
+            product.Price = model.Price;
+            product.StockQuantity = model.StockQuantity;
+            product.IsFeatured = model.IsFeatured;
+            product.ImageUrl = model.ImageUrl;
+            product.IsActive = model.IsActive;
+            product.SKU = model.SKU;
+            product.CategoryId = model.CategoryId;
+            product.UpdatedAt = DateTime.UtcNow;
+
+            // Update specifications
+            UpdateSpecifications(product, model.Specifications);
+
+            await _unitOfWork.CompleteAsync();
+        }
 
 
+        public void UpdateSpecifications(ProductViewModel product, ICollection<ProductSpecification> newSpecifications)
+        {
+            if (newSpecifications == null)
+            {
+                product.Specifications.Clear();
+                return;
+            }
 
+            // Remove deleted specifications
+            var specsToRemove = product.Specifications
+                .Where(s => !newSpecifications.Any(ns => ns.Id == s.Id))
+                .ToList();
+
+            foreach (var spec in specsToRemove)
+            {
+                product.Specifications.Remove(spec);
+            }
+
+            // Update existing or add new
+            foreach (var newSpec in newSpecifications)
+            {
+                var existingSpec = product.Specifications
+                    .FirstOrDefault(s => s.Id == newSpec.Id);
+
+                if (existingSpec != null)
+                {
+                    existingSpec.Key = newSpec.Key;
+                    existingSpec.Value = newSpec.Value;
+                }
+                else
+                {
+                    product.Specifications.Add(new ProductSpecification
+                    {
+                        Key = newSpec.Key,
+                        Value = newSpec.Value,
+                        ProductId = product.Id
+                    });
+                }
+            }
+        }
 
     }
 }

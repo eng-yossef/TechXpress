@@ -15,7 +15,10 @@ namespace TechXpress.Services.ProductsService
         // Product-specific operations
         Task<IEnumerable<ProductViewModel>> GetFeaturedProductsAsync(int count);
 
+        Task<IEnumerable<ProductViewModel>> GetAllProductsWithCategoriesAsync();
+
         Task<ProductViewModel> GetProductsWithCategoryAsync(int productId);
+
 
         Task<IEnumerable<ProductViewModel>> GetProductsByCategoryAsync(int categoryId);
         Task<IEnumerable<ProductViewModel>> SearchProductsAsync(string searchTerm);
@@ -24,7 +27,8 @@ namespace TechXpress.Services.ProductsService
         Task<decimal> GetProductPriceAsync(int productId);
         Task ApplyDiscountAsync(int productId, decimal discountPercentage);
 
-        
+        public void UpdateSpecifications(ProductViewModel product, ICollection<ProductSpecification> newSpecifications);
+
         public TechXpressDbContext GetDbContext();
 
         // Advanced filtering

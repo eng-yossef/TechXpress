@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using TechXpress.Data.Models;
 using TechXpress.Services.CategoriesService;
+using TechXpress.Web.Areas.Admin.Services;
 
 namespace TechXpress.Web.Areas.Admin.Controllers
 {
@@ -14,15 +15,18 @@ namespace TechXpress.Web.Areas.Admin.Controllers
     public class CategoryManagementController : Controller
     {
         private readonly ICategoryService _categoryService;
+        private readonly IImageService _imageService;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-
         public CategoryManagementController(
+            IImageService imageService,
             IWebHostEnvironment webHostEnvironment,
             ICategoryService categoryService)
         {
             _categoryService = categoryService;
+            _imageService = imageService;
             _webHostEnvironment = webHostEnvironment;
+
         }
 
         // GET: Admin/CategoryManagement
@@ -86,7 +90,7 @@ namespace TechXpress.Web.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
-                model.ImageUrl = await GetPathAsync(imageFile);
+                model.ImageUrl = await _imageService.GetPathAsync(imageFile);
                 await _categoryService.AddAsync(model);
                 return RedirectToAction(nameof(Index));
             }
@@ -157,7 +161,7 @@ namespace TechXpress.Web.Areas.Admin.Controllers
                                 System.IO.File.Delete(oldImagePath);
                             }
                         }
-                        model.ImageUrl = await GetPathAsync(imageFile);
+                        model.ImageUrl = await _imageService.GetPathAsync(imageFile);
                     }
 
                     // Update properties
@@ -227,37 +231,5 @@ namespace TechXpress.Web.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task<string> GetPathAsync(IFormFile imageFile)
-        {
-         
-
-            try
-            {
-                // Handle image upload
-                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath ?? "wwwroot", "images");
-
-                // Ensure the directory exists
-                Directory.CreateDirectory(uploadsFolder);
-
-                // Generate a unique filename to avoid collisions
-                string uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(imageFile.FileName)}";
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                // Save the uploaded image file
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await imageFile.CopyToAsync(fileStream);
-                }
-
-                // Return the image URL
-                return $"/images/{uniqueFileName}";
-            }
-            catch (Exception ex)
-            {
-                // Consider logging the exception here
-                // _logger.LogError(ex, "Error uploading image");
-                return string.Empty;
-            }
-        }
     }
 }

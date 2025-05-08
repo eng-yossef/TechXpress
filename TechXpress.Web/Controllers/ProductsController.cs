@@ -122,7 +122,6 @@ namespace TechXpress.Web.Controllers
                 filter: r => r.ProductId == id,
                 includeProperties: "User");
 
-            // Get current user ID if authenticated
             
 
             var viewModel = new ProductDetailsViewModel
