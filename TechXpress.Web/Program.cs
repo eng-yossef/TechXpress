@@ -26,6 +26,7 @@ using TechXpress.Web.Areas.Admin.Services;
 using TechXpress.Services.Payment;
 using TechXpress.Data.Repositories.PaymentRepo;
 using TechXpress.Services.CustomersService;
+using TechXpress.Services.GenericServices;
 
 namespace TechXpress.Web
 {
@@ -75,6 +76,7 @@ namespace TechXpress.Web
 
 
             // Add services for business logic
+            builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICartItemService, CartItemService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
@@ -85,6 +87,7 @@ namespace TechXpress.Web
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ICustomerService, CustomerService>(); // Register the service
             builder.Services.AddScoped<Areas.Admin.Services.IImageService, Areas.Admin.Services.ImageService>();
+
 
 
             // Add AI Services (Ensure these interfaces and implementations are defined correctly)

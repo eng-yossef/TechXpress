@@ -4,6 +4,7 @@ using TechXpress.Data.Models;
 using TechXpress.Services.GenericServices; // Import your generic service interface
 using TechXpress.Services.ShoppingCartsService; // Import your shopping cart service
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace TechXpress.Web.Areas.Admin.Controllers
 {
@@ -12,13 +13,18 @@ namespace TechXpress.Web.Areas.Admin.Controllers
     public class CustomerManagementController : Controller
     {
         private readonly IGenericService<ApplicationUser> _userService;
+        private readonly UserManager<ApplicationUser> _userManager;
+
         private readonly IShoppingCartService _shoppingCartService;
 
         // Constructor injection of the services
-        public CustomerManagementController(IGenericService<ApplicationUser> userService, IShoppingCartService shoppingCartService)
+        public CustomerManagementController(IGenericService<ApplicationUser> userService,
+            UserManager<ApplicationUser> userManager,
+            IShoppingCartService shoppingCartService)
         {
             _userService = userService;
             _shoppingCartService = shoppingCartService;
+            _userManager = userManager;
         }
 
         // GET: Admin/CustomerManagement/Index
@@ -28,10 +34,95 @@ namespace TechXpress.Web.Areas.Admin.Controllers
             return View(users); // View will display the list of customers
         }
 
-        // GET: Admin/CustomerManagement/Details/{userId}
-        public async Task<IActionResult> Details(string userId)
+        // GET: Admin/CustomerManagement/Create
+        public IActionResult Create()
         {
-            var user = await _userService.GetByIdAsync(userId);
+            return View(new ApplicationUser());
+        }
+
+        // POST: Admin/CustomerManagement/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(ApplicationUser user)
+        {
+            ModelState.Remove("UserId");
+            ModelState.Remove("User");
+
+            if (ModelState.IsValid)
+            {
+                var result = await _userManager.CreateAsync(user);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+            return View(user);
+        }
+
+        // GET: Admin/CustomerManagement/Edit/5
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return NotFound();
+            }
+
+            var user = await _userService.GetByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
+
+        // POST: Admin/CustomerManagement/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, ApplicationUser user)
+        {
+            ModelState.Remove("UserId");
+            ModelState.Remove("User");
+            if (id != user.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                var existingUser = await _userService.GetByIdAsync(id);
+                if (existingUser == null)
+                {
+                    return NotFound();
+                }
+
+                // Update user properties
+                existingUser.FirstName = user.FirstName;
+                existingUser.LastName = user.LastName;
+                existingUser.Email = user.Email;
+                existingUser.PhoneNumber = user.PhoneNumber;
+                existingUser.AddressLine1 = user.AddressLine1;
+                existingUser.AddressLine2 = user.AddressLine2;
+                existingUser.City = user.City;
+                existingUser.State = user.State;
+                existingUser.PostalCode = user.PostalCode;
+                existingUser.Country = user.Country;
+
+                await _userService.UpdateAsync(existingUser);
+                return RedirectToAction(nameof(Index));
+            }
+            return View(user);
+        }
+
+        // GET: Admin/CustomerManagement/Details/{userId}
+        public async Task<IActionResult> Details(string Id)
+        {
+            var user = await _userService.GetByIdAsync(Id);
+
             if (user == null)
             {
                 return NotFound();
@@ -40,9 +131,9 @@ namespace TechXpress.Web.Areas.Admin.Controllers
         }
 
         // GET: Admin/CustomerManagement/Cart/{userId}
-        public async Task<IActionResult> Cart(string userId)
+        public async Task<IActionResult> Cart(string Id)
         {
-            var cart = await _shoppingCartService.GetCartByUserIdAsync(userId);
+            var cart = await _shoppingCartService.GetCartByUserIdAsync(Id);
             if (cart == null)
             {
                 return NotFound();
@@ -50,25 +141,39 @@ namespace TechXpress.Web.Areas.Admin.Controllers
             return View(cart); // Display the user's shopping cart
         }
 
-        // POST: Admin/CustomerManagement/Delete/{userId}
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(string userId)
+        // GET: Admin/CustomerManagement/Delete/5
+        public async Task<IActionResult> Delete(string id)
         {
-            var user = await _userService.GetByIdAsync(userId);
+            if (string.IsNullOrEmpty(id))
+            {
+                return NotFound();
+            }
+
+            var user = await _userService.GetByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            await _userService.DeleteAsync(user); // Delete user from the database
-            return RedirectToAction(nameof(Index)); // Redirect to the customer list
+            return View(user);
         }
 
-        // GET: Admin/CustomerManagement/Manage/{userId}
-        public async Task<IActionResult> Manage(string userId)
+        // POST: Admin/CustomerManagement/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var user = await _userService.GetByIdAsync(userId);
+            var user = await _userService.GetByIdAsync(id);
+            if (user != null)
+            {
+                await _userService.DeleteAsync(user);
+            }
+            return RedirectToAction(nameof(Index));
+        }
+        // GET: Admin/CustomerManagement/Manage/{userId}
+        public async Task<IActionResult> Manage(string Id)
+        {
+            var user = await _userService.GetByIdAsync(Id);
             if (user == null)
             {
                 return NotFound();
@@ -76,34 +181,5 @@ namespace TechXpress.Web.Areas.Admin.Controllers
             return View(user); // Show user management options, such as updating details
         }
 
-        // POST: Admin/CustomerManagement/Update/{userId}
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Update(string userId, ApplicationUser updatedUser)
-        {
-            if (userId != updatedUser.Id)
-            {
-                return BadRequest();
-            }
-
-            var user = await _userService.GetByIdAsync(userId);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            // Update user details
-            user.FirstName = updatedUser.FirstName;
-            user.LastName = updatedUser.LastName;
-            user.AddressLine1 = updatedUser.AddressLine1;
-            user.AddressLine2 = updatedUser.AddressLine2;
-            user.City = updatedUser.City;
-            user.State = updatedUser.State;
-            user.PostalCode = updatedUser.PostalCode;
-            user.Country = updatedUser.Country;
-
-            await _userService.UpdateAsync(user); // Update the user in the database
-            return RedirectToAction(nameof(Index)); // Redirect to the customer list
-        }
     }
 }
