@@ -40,7 +40,7 @@ namespace TechXpress.Web.Areas.Admin.Controllers
         public async Task<IActionResult> UpdateStatus(int id, OrderStatus newStatus, string adminNotes)
         {
             await _orderService.UpdateOrderStatusAsync(id, newStatus, adminNotes);
-            return RedirectToAction(nameof(Details), new { id });
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Admin/OrderManagement/Stats
