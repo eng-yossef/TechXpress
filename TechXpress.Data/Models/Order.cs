@@ -56,10 +56,10 @@ namespace TechXpress.Data.Models
         // Foreign keys
         [Required]
         [Display(Name = "User")]
-        public string UserId { get; set; } = string.Empty;
+        public string? UserId { get; set; } = string.Empty;
 
         [ForeignKey("UserId")]
-        public virtual ApplicationUser User { get; set; } = new ApplicationUser();
+        public virtual ApplicationUser? User { get; set; } = new ApplicationUser();
 
         [InverseProperty("Order")]
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();

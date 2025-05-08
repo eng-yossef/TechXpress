@@ -1,0 +1,17 @@
+﻿@model TechXpress.Data.Models.Category
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>Delete Category: @Model.Name</h2>
+
+<p>Are you sure you want to delete the category "@Model.Name"?</p>
+
+<form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="@Url.Action("Index", "CategoryManagement")" class="btn btn-secondary">Cancel</a>
+</form>

@@ -34,6 +34,7 @@ namespace TechXpress.Data.Repositories.CategoryRepo
         {
             return await _context.Categories
                 .Include(c => c.Products)
+                .Include(c=>c.ParentCategory)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 

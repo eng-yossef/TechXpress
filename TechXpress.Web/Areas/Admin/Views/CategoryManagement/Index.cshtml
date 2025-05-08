@@ -1,0 +1,36 @@
+﻿@model IEnumerable<TechXpress.Data.Models.Category>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>Categories</h2>
+
+<a href="@Url.Action("Create", "CategoryManagement")" class="btn btn-primary">Create New Category</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Products Count</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var category in Model)
+        {
+            <tr>
+                <td>@category.Name</td>
+                <td>@category.Description</td>
+                <td>@category.ProductCount</td>
+                <td>
+                    <a href="@Url.Action("Details", "CategoryManagement", new { id = category.Id })" class="btn btn-info">Details</a>
+                    <a href="@Url.Action("Edit", "CategoryManagement", new { id = category.Id })" class="btn btn-warning">Edit</a>
+                    <a href="@Url.Action("Delete", "CategoryManagement", new { id = category.Id })" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

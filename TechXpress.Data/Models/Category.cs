@@ -30,7 +30,7 @@ namespace TechXpress.Data.Models
         public int? ParentId { get; set; }
 
         [ForeignKey("ParentId")]
-        public virtual Category ParentCategory { get; set; }
+        public virtual Category? ParentCategory { get; set; }
 
         public virtual ICollection<Category> ChildCategories { get; set; }
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Threading.Tasks;
 using TechXpress.Data.Models;
 using TechXpress.Services.CategoriesService;
@@ -20,14 +21,19 @@ namespace TechXpress.Web.Areas.Admin.Controllers
         // GET: Admin/CategoryManagement
         public async Task<IActionResult> Index()
         {
-            var categories = await _categoryService.GetAllAsync();
+            var categories = await _categoryService.GetAllWithProductsAsync();
+            foreach (var item in categories)
+            {
+                item.ProductCount = item.Products.Count;
+
+            }
             return View(categories);
         }
 
         // GET: Admin/CategoryManagement/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var category = await _categoryService.GetByIdAsync(id);
+            var category = await _categoryService.GetByIdWithProductsAsync(id);
             if (category == null)
                 return NotFound();
 
@@ -35,8 +41,10 @@ namespace TechXpress.Web.Areas.Admin.Controllers
         }
 
         // GET: Admin/CategoryManagement/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            ViewBag.ParentCategories = new SelectList(await _categoryService.GetAllAsync(), "Id", "Name");
+
             return View();
         }
 
@@ -45,6 +53,8 @@ namespace TechXpress.Web.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category model)
         {
+            //remove id from ModelState
+            ModelState.Remove("id");
             if (ModelState.IsValid)
             {
                 await _categoryService.AddAsync(model);
@@ -59,6 +69,7 @@ namespace TechXpress.Web.Areas.Admin.Controllers
             var category = await _categoryService.GetByIdAsync(id);
             if (category == null)
                 return NotFound();
+            ViewBag.ParentCategories = new SelectList(await _categoryService.GetAllAsync(), "Id", "Name");
 
             return View(category);
         }
@@ -69,27 +80,52 @@ namespace TechXpress.Web.Areas.Admin.Controllers
         public async Task<IActionResult> Edit(int id, Category model)
         {
             if (id != model.Id)
-                return BadRequest();
-            //map CategoryViewModel to Category 
-            var category = await _categoryService.GetByIdAsync(id);
-            if (category == null)
                 return NotFound();
-            
-            //Automapper 
-
-
-       
-
-
 
             if (ModelState.IsValid)
             {
-                await _categoryService.UpdateAsync(model);
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    var existingCategory = await _categoryService.GetByIdAsync(id);
+
+                    if (existingCategory == null)
+                        return NotFound();
+
+                    // Manually update fields instead of re-attaching the entity
+                    existingCategory.Name = model.Name;
+                    existingCategory.MetaTitle = model.MetaTitle;
+                    existingCategory.MetaDescription = model.MetaDescription;
+                    existingCategory.MetaKeywords = model.MetaKeywords;
+                    existingCategory.ParentId = model.ParentId;
+                    existingCategory.Slug = model.Slug;
+                    existingCategory.ImageUrl = model.ImageUrl;
+                    existingCategory.Description = model.Description;
+                    existingCategory.DisplayOrder = model.DisplayOrder;
+                    existingCategory.IsActive = model.IsActive;
+                    existingCategory.ModifiedDate = DateTime.UtcNow;
+                    existingCategory.Level = model.Level;
+                    existingCategory.CreatedDate = model.CreatedDate;
+                    existingCategory.ProductCount = model.ProductCount;
+                    existingCategory.ParentCategory=_categoryService.GetByIdAsync(model.ParentId).Result;
+
+                    // Update the category
+
+
+                    await _categoryService.UpdateAsync(existingCategory);
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception)
+                {
+                    // Log the error (not shown here)
+                    throw;
+                }
             }
 
+            // If model state is invalid, refill dropdown
+            ViewBag.ParentCategories = new SelectList(await _categoryService.GetAllAsync(), "Id", "Name", model.ParentId);
             return View(model);
         }
+
 
         // GET: Admin/CategoryManagement/Delete/5
         public async Task<IActionResult> Delete(int id)

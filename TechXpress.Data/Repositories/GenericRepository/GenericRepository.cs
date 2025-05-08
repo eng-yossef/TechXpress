@@ -32,6 +32,7 @@ namespace TechXpress.Data.Repositories.GenericRepository
         public async Task AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
+            await SaveAsync();
 
         }
 

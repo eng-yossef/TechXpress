@@ -119,14 +119,7 @@ namespace TechXpress.Data.Models.Contexts
                 .HasOne(p => p.Category)
                 .WithMany(c => c.Products)
                 .HasForeignKey(p => p.CategoryId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            // Uncomment this block if AdminLog is used
-            // modelBuilder.Entity<AdminLog>()
-            //     .HasOne(al => al.AdminUser)
-            //     .WithMany()
-            //     .HasForeignKey(al => al.AdminUserId)
-            //     .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

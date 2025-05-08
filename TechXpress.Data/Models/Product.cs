@@ -47,10 +47,10 @@ namespace TechXpress.Data.Models
         public DateTime? UpdatedAt { get; set; }
 
         [Required]
-        public int CategoryId { get; set; }
+        public int? CategoryId { get; set; }
 
         [ForeignKey("CategoryId")]
-        public virtual Category Category { get; set; }
+        public virtual Category? Category { get; set; }
 
 
 
