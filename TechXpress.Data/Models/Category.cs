@@ -21,7 +21,7 @@ namespace TechXpress.Data.Models
         public string Slug { get; set; }
 
         [StringLength(255)]
-        public string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
 
         //Product Count 
         [NotMapped]
@@ -42,10 +42,10 @@ namespace TechXpress.Data.Models
         public string MetaTitle { get; set; }
 
         [StringLength(160)]
-        public string MetaDescription { get; set; }
+        public string? MetaDescription { get; set; }
 
         [StringLength(500)]
-        public string MetaKeywords { get; set; }
+        public string? MetaKeywords { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
