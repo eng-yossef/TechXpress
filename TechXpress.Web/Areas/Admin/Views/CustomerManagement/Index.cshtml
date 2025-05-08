@@ -1,0 +1,41 @@
+﻿@model IEnumerable<TechXpress.Data.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Customer Management";
+}
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1>Customer Management</h1>
+
+<p>
+    <a href="@Url.Action("Create", "CustomerManagement")" class="btn btn-primary">Add New Customer</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var customer in Model)
+        {
+            <tr>
+                <td>@customer.FirstName</td>
+                <td>@customer.LastName</td>
+                <td>@customer.Email</td>
+                <td>
+                    <a href="@Url.Action("Details", "CustomerManagement", new { id = customer.Id })">Details</a> |
+                    <a href="@Url.Action("Edit", "CustomerManagement", new { id = customer.Id })">Edit</a> |
+                    <a href="@Url.Action("Delete", "CustomerManagement", new { id = customer.Id })">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

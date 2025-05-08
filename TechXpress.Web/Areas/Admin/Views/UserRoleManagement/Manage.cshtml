@@ -5,6 +5,10 @@
     string userId = ViewBag.UserId;
     string userEmail = ViewBag.UserEmail;
 }
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
 
 <h2>Manage Roles for @userEmail</h2>
 

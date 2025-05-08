@@ -25,6 +25,7 @@ using TechXpress.Web.Services.Implementations;
 using TechXpress.Web.Areas.Admin.Services;
 using TechXpress.Services.Payment;
 using TechXpress.Data.Repositories.PaymentRepo;
+using TechXpress.Services.CustomersService;
 
 namespace TechXpress.Web
 {
@@ -82,6 +83,8 @@ namespace TechXpress.Web
             builder.Services.AddScoped<IOrderDetailsService, OrderDetailsService>();
             builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<ICustomerService, CustomerService>(); // Register the service
+
 
             // Add AI Services (Ensure these interfaces and implementations are defined correctly)
             builder.Services.AddHttpClient();
