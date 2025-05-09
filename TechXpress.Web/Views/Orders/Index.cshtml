@@ -3,6 +3,8 @@
 @model IEnumerable<TechXpress.Data.Models.Order>
 @{
     ViewData["Title"] = "My Orders";
+    var statuses = typeof(TechXpress.Data.Models.OrderStatus).GetEnumSelectList();
+
 }
 
 <div class="container-fluid px-4 py-4">
@@ -59,11 +61,10 @@
                         <label for="statusFilter" class="form-label">Filter by Status</label>
                         <select class="form-select" id="statusFilter">
                             <option value="">All Statuses</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Processing">Processing</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Cancelled">Cancelled</option>
-                        </select>
+                            @foreach (var status in statuses)
+                            {
+                                <option value="@status.Key">@status.Value</option>
+                            }
                     </div>
                     <div class="col-md-4">
                         <label for="searchInput" class="form-label">Search Order #</label>
