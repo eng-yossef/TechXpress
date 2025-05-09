@@ -199,5 +199,34 @@ namespace TechXpress.Web.Areas.Admin.Controllers
             var categories = await _categoryService.GetAllAsync();
             ViewBag.Categories = new SelectList(categories, "Id", "Name", selectedCategoryId);
         }
+
+
+        // Admin/Controllers/ProductsController.cs
+
+        [HttpGet]
+        public IActionResult QuickView(int id)
+        {
+            var product = _productService.GetProductsWithCategoryAsync(id).Result; // Use .Result to block until the task completes
+                
+
+            if (product == null)
+                return NotFound();
+
+            var viewModel = new ProductViewModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                StockQuantity = product.StockQuantity,
+                ImageUrl = product.ImageUrl,
+                Category = product.Category,
+                SKU = product.SKU
+                // Add more fields if needed
+            };
+
+            return PartialView("_QuickViewPartial", viewModel);
+        }
+
     }
 }

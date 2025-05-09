@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Edit Category";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="card">
@@ -21,13 +22,13 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label asp-for="Name" class="control-label"></label>
-                        <input asp-for="Name" class="form-control" />
+                        <input asp-for="Name" class="form-control" id="Name" />
                         <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
 
                     <div class="form-group">
                         <label asp-for="Slug" class="control-label"></label>
-                        <input asp-for="Slug" class="form-control" />
+                        <input asp-for="Slug" class="form-control" id="Slug" readonly />
                         <span asp-validation-for="Slug" class="text-danger"></span>
                     </div>
 
@@ -62,7 +63,7 @@
                                 <input type="hidden" asp-for="ImageUrl" />
                             </div>
                         }
-                        <input type="file" name="imageFile" class="form-control-file" accept="image/*" />
+                        <input type="file" name="imageFile" class="form-control-file" accept="image/*" id="imageFile" />
                         <span class="text-danger">@Html.ValidationMessage("imageFile")</span>
                     </div>
 
@@ -106,16 +107,13 @@
 
             <div class="form-group mt-3">
                 <button type="submit" class="btn btn-primary">Save Changes</button>
-                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                <a asp-action="Index" class="btn btn-secondary" id="cancelButton">Cancel</a>
             </div>
         </form>
     </div>
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
     <script>
         // Automatically generate slug from name
         document.getElementById("Name").addEventListener('input', function() {
@@ -125,6 +123,24 @@
                     .replace(/[^\w\s-]/g, '')
                     .replace(/[\s_-]+/g, '-')
                     .replace(/^-+|-+$/g, '');
+            }
+        });
+
+        // Image file validation
+        document.getElementById("imageFile").addEventListener('change', function() {
+            const file = this.files[0];
+            if (file && !file.type.startsWith('image/')) {
+                alert('Please select a valid image file.');
+                this.value = '';  // Clear the input
+            }
+        });
+
+        // Cancel button confirmation
+        document.getElementById("cancelButton").addEventListener('click', function(event) {
+            if (confirm('Are you sure you want to cancel? Unsaved changes will be lost.')) {
+                window.location.href = '/Admin/Category/Index';  // Redirect to the category list
+            } else {
+                event.preventDefault();
             }
         });
     </script>

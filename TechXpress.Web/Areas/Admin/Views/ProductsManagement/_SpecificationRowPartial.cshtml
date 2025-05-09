@@ -1,16 +1,18 @@
 ﻿@using TechXpress.Data.Models
 @model ProductSpecification
 
-<div class="specification-row row mb-2">
+<div class="specification-row row align-items-center mb-3">
     <div class="col-md-5">
-        <input asp-for="Key" class="form-control" placeholder="Specification Key" />
-        <span asp-validation-for="Key" class="text-danger"></span>
+        <input asp-for="Key" class="form-control" placeholder="e.g., Color, Material, Size" />
+        <span asp-validation-for="Key" class="text-danger small"></span>
     </div>
     <div class="col-md-5">
-        <input asp-for="Value" class="form-control" placeholder="Specification Value" />
-        <span asp-validation-for="Value" class="text-danger"></span>
+        <input asp-for="Value" class="form-control" placeholder="e.g., Red, Cotton, Medium" />
+        <span asp-validation-for="Value" class="text-danger small"></span>
     </div>
-    <div class="col-md-2">
-        <button type="button" class="btn btn-danger remove-specification">Remove</button>
+    <div class="col-md-2 text-end">
+        <button type="button" class="btn btn-outline-danger btn-sm remove-specification">
+            <i class="bi bi-x-circle-fill"></i> Remove
+        </button>
     </div>
 </div>

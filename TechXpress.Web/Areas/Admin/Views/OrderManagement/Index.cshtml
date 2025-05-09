@@ -4,34 +4,99 @@
 
 @{
     ViewData["Title"] = "Order List";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h1>Order List</h1>
+<h1 class="my-4">Order List</h1>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>Status</th>
-            <th>Total</th>
-            <th>Date</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var order in Model)
-        {
+@if (Model != null && Model.Any())
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
             <tr>
-                <td>@order.Id</td>
-                <td>@order.User?.FirstName</td>
-                <td>@order.OrderStatus</td>
-                <td>@order.TotalAmount.ToString("C")</td>
-                <td>@order.OrderDate.ToString("g")</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-primary">Details</a>
-                </td>
+                <th>Order ID</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Date</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>@order.Id</td>
+                    <td>@order.OrderStatus</td>
+                    <td>@order.TotalAmount.ToString("C")</td>
+                    <td>@order.OrderDate.ToString("g")</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-primary">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">
+        No orders found.
+    </div>
+}
+
+<!-- Button to get stats -->
+<button id="getStatsBtn" class="btn btn-info mb-3">Get Stats</button>
+
+<!-- Stats Section -->
+<div id="statsSection" style="display:none;" class="mt-4">
+    <h3>📊 Statistics</h3>
+    <p><strong>Total Sales:</strong> <span id="totalSales"></span></p>
+    <h5>Order Counts by Status:</h5>
+    <ul id="orderCounts" class="list-group"></ul>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Handle the "Get Stats" button click
+            $("#getStatsBtn").click(function () {
+                $.ajax({
+                    url: '@Url.Action("Stats", "OrderManagement", new { area = "Admin" })',
+                    type: 'GET',
+                    success: function (response) {
+                        if (response) {
+                            // Format and show total sales
+                                            const statsVisible = $('#statsSection').is(':visible');
+
+                            $('#totalSales').text(`$${parseFloat(response.totalSales).toFixed(2)}`);
+                             if (statsVisible) {
+                    $('#statsSection').slideUp(); // Hide if already shown
+                    return;
+                }
+
+                            // Clear existing order counts
+                            $('#orderCounts').empty();
+
+                            // Loop through OrderCounts and append each status
+                            for (const status in response.orderCounts) {
+                                const count = response.orderCounts[status];
+                                $('#orderCounts').append(`
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        ${status}
+                                        <span class="badge bg-primary rounded-pill">${count}</span>
+                                    </li>
+                                `);
+                            }
+
+                                                       $('#statsSection').slideDown(); // Show with animation
+
+                        }
+                    },
+                    error: function () {
+                        alert("Error loading stats.");
+                    }
+                });
+            });
+        });
+    </script>
+}

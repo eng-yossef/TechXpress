@@ -52,7 +52,7 @@ namespace TechXpress.Web.Areas.Admin.Controllers
             ViewBag.TotalSales = totalSales;
             ViewBag.OrderCounts = orderCounts;
 
-            return View();
+            return Json(new { totalSales , orderCounts });
         }
     }
 }

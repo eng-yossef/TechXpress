@@ -4,55 +4,82 @@
 
 @{
     ViewData["Title"] = "Order Details";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2>Order #@Model.Id</h2>
-<p><strong>Customer:</strong> @Model.User?.FirstName</p>
-<p><strong>Status:</strong> @Model.OrderStatus</p>
-<p><strong>Created At:</strong> @Model.OrderDate.ToString("f")</p>
-<p><strong>Admin Notes:</strong> @Model.AdminNotes</p>
+<div class="container my-5">
+    <div class="card shadow-lg">
+        <div class="card-header text-center bg-primary text-white">
+            <h3>Order #@Model.Id</h3>
+        </div>
+        <div class="card-body">
+            <h4>Order Information</h4>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>Customer:</strong> @Model.User?.FirstName</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Status:</strong> @Model.OrderStatus</p>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>Created At:</strong> @Model.OrderDate.ToString("f")</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Admin Notes:</strong> @Model.AdminNotes</p>
+                </div>
+            </div>
 
-<h4>Order Items</h4>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>Unit Price</th>
-            <th>Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.OrderDetails)
-        {
-            <tr>
-                <td>@item.Product?.Name</td>
-                <td>@item.Quantity</td>
-                <td>@item.Price.ToString("C")</td>
-                <td>@(item.Quantity * item.Price).ToString("C")</td>
-            </tr>
-        }
-    </tbody>
-</table>
+            <h4>Order Items</h4>
+            <table class="table table-striped table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderDetails)
+                    {
+                        <tr>
+                            <td>@item.Product?.Name</td>
+                            <td>@item.Quantity</td>
+                            <td>@item.Price.ToString("C")</td>
+                            <td>@((item.Quantity * item.Price).ToString("C"))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
 
-<h5>Total: @Model.TotalAmount.ToString("C")</h5>
+            <h5 class="mt-4">Total: @Model.TotalAmount.ToString("C")</h5>
 
-<hr />
-<h4>Update Order Status</h4>
-<form asp-action="UpdateStatus" method="post">
-    <input type="hidden" name="id" value="@Model.Id" />
+            <hr />
 
-    <div class="form-group">
-        <label for="newStatus">New Status</label>
-       @Html.DropDownList("newStatus", Html.GetEnumSelectList<OrderStatus>(), new { @class = "form-control" })
+            <h4>Update Order Status</h4>
+            <form asp-action="UpdateStatus" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
 
+                <div class="form-group">
+                    <label for="newStatus">New Status</label>
+                    @Html.DropDownList("newStatus", Html.GetEnumSelectList<OrderStatus>(), new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    <label for="adminNotes">Admin Notes</label>
+                    <textarea name="adminNotes" class="form-control" rows="3">@Model.AdminNotes</textarea>
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-success btn-lg">Update</button>
+                    <a asp-action="Index" class="btn btn-secondary btn-lg ml-2">Back</a>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
 
-    <div class="form-group">
-        <label for="adminNotes">Admin Notes</label>
-        <textarea name="adminNotes" class="form-control" rows="3">@Model.AdminNotes</textarea>
-    </div>
-
-    <button type="submit" class="btn btn-success">Update</button>
-    <a asp-action="Index" class="btn btn-secondary">Back</a>
-</form>
+<!-- Include Bootstrap JS (for potential future functionality like modal dialogs) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,231 +1,670 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using TechXpress.Data.Models
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
-
-@{
-    var isDarkMode = Context.Request.Cookies["theme"] == "dark";
-    var currentUser = await UserManager.GetUserAsync(User);
-}
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <!DOCTYPE html>
-<html lang="en" data-theme="@(isDarkMode ? "dark" : "light")">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TechXpress Admin</title>
+    <title>@ViewBag.Title - TechXpress Admin</title>
 
-    <!-- Favicon -->
-    <link rel="icon" href="~/favicon.ico" type="image/x-icon">
+    <!-- Core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #4e73df;
+            --primary-light: rgba(78, 115, 223, 0.1);
+            --secondary: #858796;
+            --success: #1cc88a;
+            --info: #36b9cc;
+            --warning: #f6c23e;
+            --danger: #e74a3b;
+            --light: #f8f9fc;
+            --dark: #2e2e2e;
+            --sidebar-bg: #1a1a2e;
+            --sidebar-active: #16213e;
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 80px;
+            --topbar-height: 70px;
+            --card-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --border-radius: 8px;
+        }
 
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fb;
+            color: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background-color: var(--sidebar-bg);
+            color: white;
+            transition: var(--transition);
+            z-index: 1000;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.1);
+        }
 
-    @await RenderSectionAsync("Styles", required: false)
+        .sidebar-collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+            .sidebar-collapsed .sidebar-brand-text,
+            .sidebar-collapsed .nav-link-text {
+                display: none;
+            }
+
+            .sidebar-collapsed .nav-item {
+                text-align: center;
+            }
+
+            .sidebar-collapsed .nav-link i {
+                margin-right: 0;
+                font-size: 1.2rem;
+            }
+
+        .sidebar-brand {
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 1.5rem;
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-brand-icon {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-right: 0.75rem;
+        }
+
+        .sidebar-brand-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+            list-style: none;
+        }
+
+        .nav-item {
+            position: relative;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+        }
+
+            .nav-link:hover,
+            .nav-link.active {
+                color: white;
+                background-color: var(--sidebar-active);
+                border-left-color: var(--primary);
+            }
+
+            .nav-link i {
+                margin-right: 0.75rem;
+                font-size: 1.1rem;
+                width: 24px;
+                text-align: center;
+                transition: var(--transition);
+            }
+
+        .nav-link-text {
+            transition: var(--transition);
+        }
+
+        .nav-dropdown {
+            list-style: none;
+            padding-left: 0;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease;
+        }
+
+            .nav-dropdown.show {
+                max-height: 500px;
+            }
+
+            .nav-dropdown .nav-link {
+                padding-left: 3rem;
+                padding-top: 0.6rem;
+                padding-bottom: 0.6rem;
+                font-size: 0.9rem;
+            }
+
+        .dropdown-toggle::after {
+            display: inline-block;
+            margin-left: auto;
+            transition: transform 0.3s;
+        }
+
+        .dropdown-toggle.show::after {
+            transform: rotate(90deg);
+        }
+
+        /* Topbar Styles */
+        .topbar {
+            height: var(--topbar-height);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 999;
+            background-color: white;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+        }
+
+        .topbar-collapsed {
+            left: var(--sidebar-collapsed-width);
+        }
+
+        .topbar-content {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            font-size: 1.25rem;
+            margin-right: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+            .sidebar-toggle:hover {
+                color: var(--primary);
+            }
+
+        .topbar-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--dark);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .topbar-search {
+            position: relative;
+            margin-right: 1.5rem;
+        }
+
+        .search-input {
+            width: 220px;
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            border-radius: 20px;
+            border: 1px solid #e0e0e0;
+            transition: var(--transition);
+        }
+
+            .search-input:focus {
+                width: 280px;
+                border-color: var(--primary);
+                box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+            }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+        }
+
+        .topbar-divider {
+            width: 1px;
+            height: 2.5rem;
+            background-color: #e3e6f0;
+            margin: 0 1.5rem;
+        }
+
+        .topbar-nav {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-icon {
+            font-size: 1.25rem;
+            color: var(--secondary);
+            margin: 0 0.75rem;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+            .nav-icon:hover {
+                color: var(--primary);
+            }
+
+        .badge-counter {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-dropdown {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .user-name {
+            margin-right: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            padding: 0.5rem 0;
+        }
+
+        .dropdown-item {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+            .dropdown-item:hover {
+                background-color: var(--primary-light);
+                color: var(--primary);
+            }
+
+        .dropdown-divider {
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--topbar-height);
+            padding: 2rem;
+            transition: var(--transition);
+            min-height: calc(100vh - var(--topbar-height));
+        }
+
+        .main-content-collapsed {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+            }
+
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+            .card-title i {
+                margin-right: 0.75rem;
+                color: var(--primary);
+            }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .topbar-content
+
+        {
+            padding: 0 1rem;
+        }
+
+        .search-input {
+            width: 180px;
+        }
+
+            .search-input:focus {
+                width: 180px;
+            }
+
+        .topbar-divider {
+            margin: 0 0.75rem;
+        }
+
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        }
+
+        @@media (max-width: 576px) {
+            .user-name
+
+        {
+            display: none;
+        }
+
+        .search-input {
+            width: 40px;
+            padding-left: 2.5rem;
+        }
+
+            .search-input:focus {
+                width: 180px;
+            }
+
+        .main-content {
+            padding: 1rem;
+        }
+
+        }
+    </style>
 </head>
 <body>
-    <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-brand">
-                    <i class="fas fa-laptop-code"></i>
-                    <span>TechXpress</span>
-                    <small>Admin</small>
-                </div>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="sidebar-brand">
+            <i class="fas fa-laptop-code me-2"></i>
+            <span class="sidebar-brand-text">TechXpress</span>
+        </a>
+
+        <ul class="sidebar-nav">
+            <!-- Home Link -->
+            <li class="nav-item">
+                <a asp-controller="Home" asp-action="Index" asp-area=""
+                   class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Home" &&
+                              ViewContext.RouteData.Values["action"].ToString() == "Index" &&
+                              string.IsNullOrEmpty(ViewContext.RouteData.Values["area"]?.ToString()) ? "active" : "")">
+                    <i class="fas fa-home"></i>
+                    <span class="nav-link-text">Home (Main Site)</span>
+                </a>
+            </li>
+
+            <!-- Dashboard Link -->
+            <li class="nav-item">
+                <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+                   class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Dashboard" ? "active" : "")">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="nav-link-text">Dashboard</span>
+                </a>
+            </li>
+
+            <!-- Categories Link -->
+            <li class="nav-item">
+                <a asp-area="Admin" asp-controller="CategoryManagement" asp-action="Index"
+                   class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "CategoryManagement" ? "active" : "")">
+                    <i class="fas fa-tags"></i>
+                    <span class="nav-link-text">Categories</span>
+                </a>
+            </li>
+
+            <!-- Products Link -->
+            <li class="nav-item">
+                <a asp-area="Admin" asp-controller="ProductsManagement" asp-action="Index"
+                   class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "ProductsManagement" ? "active" : "")">
+                    <i class="fas fa-boxes"></i>
+                    <span class="nav-link-text">Products</span>
+                </a>
+            </li>
+
+            <!-- Orders Link -->
+            <li class="nav-item">
+                <a asp-area="Admin" asp-controller="OrderManagement" asp-action="Index"
+                   class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "OrderManagement" ? "active" : "")">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="nav-link-text">Orders</span>
+                </a>
+            </li>
+
+            <!-- Payments Link -->
+            <li class="nav-item">
+                <a asp-area="Admin" asp-controller="PaymentManagement" asp-action="Index"
+                   class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "PaymentManagement" ? "active" : "")">
+                    <i class="fas fa-credit-card"></i>
+                    <span class="nav-link-text">Payments</span>
+                </a>
+            </li>
+
+            <!-- Customers Link -->
+            <li class="nav-item">
+                <a asp-area="Admin" asp-controller="CustomerManagement" asp-action="Index"
+                   class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "CustomerManagement" ? "active" : "")">
+                    <i class="fas fa-users"></i>
+                    <span class="nav-link-text">Customers</span>
+                </a>
+            </li>
+
+            <!-- Roles & Permissions Link -->
+            <li class="nav-item">
+                <a asp-area="Admin" asp-controller="UserRoleManagement" asp-action="Index"
+                   class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "UserRoleManagement" ? "active" : "")">
+                    <i class="fas fa-user-shield"></i>
+                    <span class="nav-link-text">Roles & Permissions</span>
+                </a>
+            </li>
+
+            <!-- Reports Link -->
+            <li class="nav-item">
+                <a asp-area="Admin" asp-controller="Report" asp-action="Index"
+                   class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Report" ? "active" : "")">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="nav-link-text">Reports</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Topbar -->
+    <nav class="topbar" id="topbar">
+        <div class="topbar-content">
+            <div class="topbar-left">
                 <button class="sidebar-toggle" id="sidebarToggle">
                     <i class="fas fa-bars"></i>
                 </button>
+                <h1 class="topbar-title">@ViewData["Title"]</h1>
             </div>
 
-            <div class="sidebar-user">
-                <div class="user-avatar">
-                    @if (currentUser?.ProfilePictureUrl != null)
-                    {
-                        var imgUrl = Url.Content("~" + currentUser.ProfilePictureUrl);
-                        <img src="@imgUrl" alt="User Avatar" />
-                    }
-                    else
-                    {
-                        <div class="avatar-placeholder">
-                            @(currentUser?.FirstName?.FirstOrDefault() ?? 'A')
-                        </div>
-                    }
-
+            <div class="topbar-right">
+                <div class="topbar-search">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="form-control search-input" placeholder="Search...">
                 </div>
-                <div class="user-info">
-                    <div class="user-name">@currentUser?.FirstName @currentUser?.LastName</div>
-                    <div class="user-role">
-                        @if (User.IsInRole("SuperAdmin"))
-                        {
-                            <span class="badge bg-danger">Super Admin</span>
-                        }
-                        else if (User.IsInRole("Admin"))
-                        {
-                            <span class="badge bg-primary">Admin</span>
-                        }
-                    </div>
-                </div>
-            </div>
 
-            <nav class="sidebar-nav">
-                <ul>
-                    <!-- Dashboard -->
-                    <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
-                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
+                <div class="topbar-divider"></div>
 
-                    <!-- User Management -->
-                    <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "UserRoleManagment" ? "active" : "")">
-                        <a asp-area="Admin" asp-controller="Users" asp-action="Index">
-                            <i class="fas fa-users-cog"></i>
-                            <span>User Management</span>
-                        </a>
-                    </li>
-
-                    <!-- Product Management -->
-                    <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "ProductManagment" ? "active" : "")">
-                        <a asp-area="Admin" asp-controller="Products" asp-action="Index">
-                            <i class="fas fa-boxes"></i>
-                            <span>Products</span>
-                        </a>
-                    </li>
-
-                    <!-- Orders -->
-                    <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "OrderManagment" ? "active" : "")">
-                        <a asp-area="Admin" asp-controller="Orders" asp-action="Index">
-                            <i class="fas fa-shopping-basket"></i>
-                            <span>Orders</span>
-                            <span class="badge bg-primary">5</span> <!-- Badge showing number of orders -->
-                        </a>
-                    </li>
-
-                    <!-- Categories -->
-                    <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "CategoryManagment" ? "active" : "")">
-                        <a asp-area="Admin" asp-controller="Categories" asp-action="Index">
-                            <i class="fas fa-tags"></i>
-                            <span>Categories</span>
-                        </a>
-                    </li>
-
-                    <!-- Reports -->
-                    <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reports" ? "active" : "")">
-                        <a asp-area="Admin" asp-controller="Reports" asp-action="Index">
-                            <i class="fas fa-chart-line"></i>
-                            <span>Reports</span>
-                        </a>
-                    </li>
-
-                    <!-- Payments -->
-                    <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Payments" ? "active" : "")">
-                        <a asp-area="Admin" asp-controller="Payments" asp-action="Index">
-                            <i class="fas fa-credit-card"></i>
-                            <span>Payments</span>
-                            <span class="badge bg-success">New</span> <!-- Badge showing new payments -->
-                        </a>
-                    </li>
-
-                    <!-- Settings -->
-                    <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Settings" ? "active" : "")">
-                        <a asp-area="Admin" asp-controller="Settings" asp-action="Index">
-                            <i class="fas fa-cogs"></i>
-                            <span>Settings</span>
-                        </a>
-                    </li>
-
-                    <!-- Log Out -->
+                <ul class="topbar-nav">
                     <li class="nav-item">
-                        <a asp-area="Admin" asp-controller="Account" asp-action="Logout">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
+                        <a class="nav-icon" href="#">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge-counter">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-icon" href="#">
+                            <i class="fas fa-envelope"></i>
+                            <span class="badge-counter">7</span>
                         </a>
                     </li>
                 </ul>
-            </nav>
 
-            <div class="sidebar-footer">
-                <button class="theme-toggle" id="adminThemeToggle">
-                    <i class="@(isDarkMode ? "fas fa-sun" : "fas fa-moon")"></i>
-                    <span>@(isDarkMode ? "Light Mode" : "Dark Mode")</span>
-                </button>
-            </div>
-        </aside>
+                <div class="topbar-divider"></div>
 
-        <!-- Main Content -->
-        <main class="admin-main">
-            <!-- Top Navigation -->
-            <header class="admin-header">
-                <div class="header-left">
-                    <button class="sidebar-toggle-mobile" id="sidebarToggleMobile">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div class="page-title-container">
-                        <h1 class="page-title">@ViewData["Title"]</h1>
+                <div class="dropdown">
+                    <div class="user-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar">@UserManager.GetUserName(User)?[0]</div>
+                        <span class="user-name">
+                            @UserManager.GetUserName(User)?.Split('@')[0]
+                        </span>
+                        <i class="fas fa-chevron-down"></i>
                     </div>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-list me-2"></i> Activity Log</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/Account/Logout"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                    </ul>
                 </div>
-
-                @* <div class="header-right"> *@
-                @*     <div class="header-user dropdown"> *@
-                @*         <button class="user-btn dropdown-toggle" data-bs-toggle="dropdown"> *@
-                           
-
-                @*             <span>@currentUser?.FirstName</span> *@
-                @*         </button> *@
-                @*         <ul class="dropdown-menu dropdown-menu-end"> *@
-                @*             <li><h6 class="dropdown-header">@currentUser?.Email</h6></li> *@
-                @*             <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li> *@
-                @*             <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li> *@
-                @*             <li><hr class="dropdown-divider"></li> *@
-                @*             <li> *@
-                @*                 <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"> *@
-                @*                     <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button> *@
-                @*                 </form> *@
-                @*             </li> *@
-                @*         </ul> *@
-                @*     </div> *@
-                @* </div> *@
-            </header>
-
-            <!-- Page Content -->
-            <div class="admin-content">
-                <partial name="_StatusMessage" />
-                @RenderBody()
             </div>
+        </div>
+    </nav>
 
-            <!-- Footer -->
-            <footer class="admin-footer">
-                <div class="footer-left">
-                    &copy; @DateTime.Now.Year - TechXpress Admin
-                </div>
-                <div class="footer-right">
-                    <span>v1.0.0</span>
-                </div>
-            </footer>
-        </main>
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        @RenderBody()
+
     </div>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
-    <!-- Custom Admin JS -->
-    <script src="~/js/admin.js" asp-append-version="true"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const topbar = document.getElementById('topbar');
+            const mainContent = document.getElementById('mainContent');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            let isCollapsed = false;
+
+            // Toggle sidebar collapse
+            sidebarToggle.addEventListener('click', function() {
+                isCollapsed = !isCollapsed;
+
+                if (isCollapsed) {
+                    sidebar.classList.add('sidebar-collapsed');
+                    topbar.classList.add('topbar-collapsed');
+                    mainContent.classList.add('main-content-collapsed');
+                } else {
+                    sidebar.classList.remove('sidebar-collapsed');
+                    topbar.classList.remove('topbar-collapsed');
+                    mainContent.classList.remove('main-content-collapsed');
+                }
+            });
+
+            // Mobile sidebar toggle
+            function handleResize() {
+                if (window.innerWidth < 992) {
+                    sidebar.classList.remove('sidebar-collapsed');
+                    topbar.classList.remove('topbar-collapsed');
+                    mainContent.classList.remove('main-content-collapsed');
+                }
+            }
+
+            window.addEventListener('resize', handleResize);
+            handleResize();
+
+            // Initialize tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+
+            // Initialize DataTables
+            $('.data-table').DataTable({
+                responsive: true,
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search...",
+                }
+            });
+        });
+    </script>
+
+    @RenderSection("Styles", required: false)
+    @RenderSection("Scripts", required: false)
 </body>
 </html>
