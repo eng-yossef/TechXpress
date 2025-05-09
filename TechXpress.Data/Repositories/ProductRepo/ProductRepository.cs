@@ -46,6 +46,7 @@ namespace TechXpress.Data.Repositories.ProductRepo
                 .OrderByDescending(p => p.CreatedDate)
                 .Take(count)
                 .Include(p => p.Category)
+                .Include(p=>p.Reviews)
                 .ToListAsync();
         }
 

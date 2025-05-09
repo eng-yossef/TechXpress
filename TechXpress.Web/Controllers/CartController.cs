@@ -103,6 +103,7 @@ namespace TechXpress.Web.Controllers
                 ViewBag.CartItemCount = cart.Items.Sum(item => item.Quantity);
 
 
+
                 return View(cartViewModel);
             }
             catch (Exception ex)
@@ -615,13 +616,6 @@ namespace TechXpress.Web.Controllers
             await _orderDetailsService.AddRangeAsync(orderDetails);
 
             await _unitOfWork.CompleteAsync();
-
-            // Create Stripe PaymentIntent
-            //var amountInCents = (long)(totalAmount);
-            //var intent = await _stripeService.CreatePaymentIntentAsync(amountInCents, userId, order.Id);
-
-            // Redirect to payment page (pass intent + orderId)
-            //return RedirectToAction( "Payment", new { Id = order.Id, intentId = intent.Id });
             return RedirectToAction("Index", "Payment", new { Id = order.Id});
 
         }
@@ -714,16 +708,5 @@ namespace TechXpress.Web.Controllers
                 }).ToList()
             };
         }
-
-        private bool ProcessPayment(CheckoutViewModel model)
-        {
-            // In a real implementation, this would integrate with a payment gateway
-            // For demo purposes, we'll just simulate a successful payment
-            return true;
-        }
     }
-
-    // ---------------------------- View Models ----------------------------
-
-   
 }

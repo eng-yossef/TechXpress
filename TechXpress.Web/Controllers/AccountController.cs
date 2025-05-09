@@ -77,6 +77,19 @@ namespace TechXpress.Web.Controllers
                 //Welcome by name
                 TempData["SuccessMessage"] = $"Welcome Back {user.FirstName} !";
 
+                //Check User Role to Redirect
+                var roles = await _userManager.GetRolesAsync(user);
+                if (roles.Contains("Admin"))
+                {
+                    return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                }
+                else if (roles.Contains("Customer"))
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+
+
+
                 return RedirectToAction("Index", "Home");
             }
 

@@ -14,7 +14,6 @@ namespace TechXpress.Web.Areas.Admin.Controllers
     {
         private readonly IGenericService<ApplicationUser> _userService;
         private readonly UserManager<ApplicationUser> _userManager;
-
         private readonly IShoppingCartService _shoppingCartService;
 
         // Constructor injection of the services

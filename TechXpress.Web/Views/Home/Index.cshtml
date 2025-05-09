@@ -1,64 +1,647 @@
 ﻿@using TechXpress.Data.Models
 @model IEnumerable<ProductViewModel>
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Home - TechXpress | Your Ultimate Tech Destination";
 }
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item active" aria-current="page">
-            <i class="fas fa-home"></i> Home
-        </li>
-    </ol>
-</nav>
+@* <nav aria-label="breadcrumb"> *@
+@*     <ol class="breadcrumb"> *@
+@*         <li class="breadcrumb-item active" aria-current="page"> *@
+@*             <i class="fas fa-home"></i> Home *@
+@*         </li> *@
+@*     </ol> *@
+@* </nav> *@
 
-<h2 class="mb-4">Featured Products</h2>
-
-<div class="featured-products-slider">
-    @foreach (var product in Model)
-    {
-        <div class="slider-item">
-            <div class="card h-100 shadow-sm">
-                <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name">
-                <div class="card-body">
-                    <h5 class="card-title">@product.Name</h5>
-                    <p class="card-text">@product.Description</p>
-                    <p class="card-text text-primary"><strong>$@product.Price</strong></p>
-                    <a href="/products/details/@product.Id" class="btn btn-outline-primary btn-sm">View Details</a>
+<section class="hero-banner mb-5 position-relative">
+    <div class="techxpress-logo-pattern"></div>
+    <div class="container-fluid px-0">
+        <div class="hero-slider">
+            <div class="hero-slide">
+                <div class="hero-content">
+                    <h1 class="display-4">Next-Gen Tech at Your Fingertips</h1>
+                    <p class="lead">Discover the latest innovations with unbeatable prices</p>
+                    <div class="d-flex gap-3">
+                        <a href="/products" class="btn btn-primary btn-lg px-4 py-3">Shop Now</a>
+                        <a href="/new-arrivals" class="btn btn-outline-light btn-lg px-4 py-3">New Arrivals</a>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-slide">
+                <div class="hero-content">
+                    <h1 class="display-4">Summer Tech Sale</h1>
+                    <p class="lead">Up to 50% off on select items - Limited time only!</p>
+                    <div class="d-flex gap-3">
+                        <a href="/products/sale" class="btn btn-danger btn-lg px-4 py-3">View Deals</a>
+                        <a href="/trending" class="btn btn-outline-light btn-lg px-4 py-3">Trending Now</a>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-slide">
+                <div class="hero-content">
+                    <h1 class="display-4">Exclusive Member Benefits</h1>
+                    <p class="lead">Join TechXpress Premium for free shipping & special discounts</p>
+                    <div class="d-flex gap-3">
+                        <a href="/membership" class="btn btn-warning btn-lg px-4 py-3">Learn More</a>
+                        <a href="/signup" class="btn btn-outline-light btn-lg px-4 py-3">Sign Up Free</a>
+                    </div>
                 </div>
             </div>
         </div>
-    }
-</div>
+    </div>
+</section>
+
+
+<!-- Featured Categories -->
+<section class="featured-categories mb-5">
+    <div class="container">
+        <h2 class="section-title mb-4">Shop by Category</h2>
+        <div class="row">
+            <div class="col-md-3 col-6 mb-4">
+                <a href="/category/laptops" class="category-card">
+                    <div class="card shadow-sm h-100">
+                        <div class="category-icon">
+                            <i class="fas fa-laptop"></i>
+                        </div>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Laptops</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <a href="/products/category/smartphones" class="category-card">
+                    <div class="card shadow-sm h-100">
+                        <div class="category-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Smartphones</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <a href="/products/category/accessories" class="category-card">
+                    <div class="card shadow-sm h-100">
+                        <div class="category-icon">
+                            <i class="fas fa-headphones"></i>
+                        </div>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Accessories</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <a href="/products/category/gaming" class="category-card">
+                    <div class="card shadow-sm h-100">
+                        <div class="category-icon">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Gaming</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="featured-products mb-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title mb-0">Featured Products</h2>
+            <a href="/products" class="btn btn-outline-primary">View All</a>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="featured-products-slider">
+                @foreach (var product in Model)
+                {
+                    <div class="slider-item">
+                        <div class="card h-100 shadow-sm">
+                            <div class="badge-container">
+                                @if ((DateTime.Now - product.CreatedDate).TotalDays <= 7)
+                                {
+                                    <span class="badge bg-success">NEW</span>
+                                }
+                            </div>
+                            <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name">
+                            <div class="card-body">
+                                <div class=" justify-content-between align-items-start">
+                                    <h5 class="card-title">@product.Name</h5>
+                                    <div class="rating">
+                                        @{
+                                            var avgRating = product.Reviews?.Any() == true
+                                            ? product.Reviews.Average(r => r.Rating)
+                                            : 0;
+                                        }
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="fas fa-star @(i <= avgRating ? "text-warning" : "text-secondary")"></i>
+                                        }
+                                    </div>
+                                </div>
+                                <p class="card-text text-muted small">@product.Description</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-primary"><strong>$@product.Price.ToString("N2")</strong></span>
+                                    
+                                    <a href="/products/details/@product.Id" class="btn btn-outline-primary btn-sm">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                No featured products available at this time.
+            </div>
+        }
+    </div>
+</section>
+<!-- Deal of the Day -->
+<section class="deal-of-the-day mb-5 py-4 bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title mb-0">Deal of the Day</h2>
+            <div class="deal-countdown">
+                <span class="countdown-label">Ends in:</span>
+                <div class="countdown-timer" data-endtime="@DateTime.Now.AddHours(12).ToString("o")">
+                    <span class="hours">12</span>:<span class="minutes">00</span>:<span class="seconds">00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            @foreach (var product in Model.Take(2))
+            {
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <div class="card shadow-sm h-100">
+                        <div class="row no-gutters h-100">
+                            <div class="col-md-6">
+                                <img src="@product.ImageUrl" class="card-img h-100" alt="@product.Name">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card-body">
+
+                                        <span class="badge badge-danger mb-2">(@product.Price%99)% OFF</span>
+                                    
+                                    <h3 class="card-title">@product.Name</h3>
+                                    <p class="card-text">@product.Description</p>
+                                    <div class="price mb-3">
+                                        <span class="text-danger display-4">$@((product.Price - (product.Price * 40 / 100)).ToString("0.00"))</span>
+                                        <span class="text-muted"><del>${@product.Price:0.00}</del></span>
+                                    </div>
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <p class="small text-muted">Only @product.StockQuantity left at this price!</p>
+                                    <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                                        <input type="hidden" name="productId" value="@product.Id" />
+                                        <button type="submit" class="btn btn-danger btn-block">Add to Cart</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials mb-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">What Our Customers Say</h2>
+        <div class="testimonial-slider">
+            <div class="testimonial-item">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="rating mb-3 text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="card-text">"TechXpress has the best prices and fastest shipping I've ever experienced. My new laptop arrived a day early!"</p>
+                        <div class="d-flex align-items-center mt-4">
+                            <img src="/images/download.jpeg" class="rounded-circle mr-3" alt="Customer">
+                            <div>
+                                <h6 class="mb-0">Sarah Johnson</h6>
+                                <small class="text-muted">Verified Buyer</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-item">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="rating mb-3 text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p class="card-text">"Excellent customer service. They helped me choose the perfect phone for my needs and even price-matched a competitor."</p>
+                        <div class="d-flex align-items-center mt-4">
+                            <img src="/images/download.jpeg" class="rounded-circle mr-3" alt="Customer">
+                            <div>
+                                <h6 class="mb-0">Michael Chen</h6>
+                                <small class="text-muted">Verified Buyer</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-item">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="rating mb-3 text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="card-text">"The quality of products is outstanding. I've purchased multiple items and have never been disappointed."</p>
+                        <div class="d-flex align-items-center mt-4">
+                            <img src="/images/download.jpeg" class="rounded-circle mr-3" alt="Customer">
+                            <div>
+                                <h6 class="mb-0">David Wilson</h6>
+                                <small class="text-muted">Verified Buyer</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Subscription -->
+<section class="newsletter mb-5 py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="mb-3">Stay Updated with TechXpress</h2>
+                <p class="lead mb-4">Subscribe to our newsletter for exclusive deals, new arrivals, and tech tips.</p>
+                <form class="form-inline justify-content-center">
+                    <div class="input-group mb-2 mr-sm-2" style="width: 350px;">
+                        <input type="email" class="form-control form-control-lg" placeholder="Your email address">
+                        <div class="input-group-append">
+                            <button class="btn btn-dark btn-lg" type="submit">Subscribe</button>
+                        </div>
+                    </div>
+                </form>
+                <small class="text-white-50">We respect your privacy. Unsubscribe at any time.</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="brands mb-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">Shop Top Brands</h2>
+        <div class="brand-slider">
+            
+             <div class="brand-item">
+                <img src="@Url.Content("~/images/brands/msi.png")" alt="msi" class="img-fluid">
+            </div>
+            <div class="brand-item">
+                <img src="@Url.Content("~/images/brands/nokia.png")" alt="nokia" class="img-fluid">
+            </div>
+            <div class="brand-item">
+                <img src="@Url.Content("~/images/brands/samsung.png")" alt="Samsung" class="img-fluid">
+            </div>
+            <div class="brand-item">
+                <img src="@Url.Content("~/images/brands/dell.png")" alt="Dell" class="img-fluid">
+            </div>
+            <div class="brand-item">
+                <img src="@Url.Content("~/images/brands/hp.png")" alt="HP" class="img-fluid">
+            </div>
+            <div class="brand-item">
+                <img src="@Url.Content("~/images/brands/lg.png")" alt="LG" class="img-fluid">
+            </div>
+            <div class="brand-item">
+                <img src="@Url.Content("~/images/brands/microsoft.png")" alt="Microsoft" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</section>
+
 
 @section Styles {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
     <style>
+        /* Hero Banner */
+        /* Hero Banner with TechXpress Logo Pattern */
+        .hero-banner {
+            margin-top:20px;
+            height: 500px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+
+        }
+
+        .techxpress-logo-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath fill='rgba(0,123,255,0.03)' d='M50 0 L100 50 L50 100 L0 50 Z'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='10' text-anchor='middle' fill='rgba(0,123,255,0.2)'%3ETX%3C/text%3E%3C/svg%3E");
+            background-size: 100px 100px;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        .hero-slider {
+            height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-slide {
+            height: 600px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            position: relative;
+        }
+
+            .hero-slide:nth-child(1) {
+                background-image: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%), url('https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+            }
+
+            .hero-slide:nth-child(2) {
+                background-image: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%), url('https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+            }
+
+            .hero-slide:nth-child(3) {
+                background-image: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%), url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+            }
+
+        .hero-content {
+            color: white;
+            max-width: 700px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+            .hero-content h1 {
+                font-weight: 800;
+                text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+                margin-bottom: 1.5rem;
+                font-size: 3.5rem;
+                line-height: 1.2;
+            }
+
+            .hero-content .lead {
+                font-size: 1.5rem;
+                margin-bottom: 2rem;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+                font-weight: 300;
+            }
+
+        .btn-lg {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        /* Animation */
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 992px) {
+            .hero-banner, .hero-slide {
+                height: 500px;
+            }
+
+            .hero-content h1 {
+                font-size: 2.8rem;
+            }
+
+            .hero-content .lead {
+                font-size: 1.3rem;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .hero-banner, .hero-slide {
+                height: 450px;
+            }
+
+            .hero-content {
+                text-align: center;
+                padding: 0 20px;
+            }
+
+                .hero-content h1 {
+                    font-size: 2.2rem;
+                }
+
+                .hero-content .lead {
+                    font-size: 1.1rem;
+                }
+
+                .hero-content .d-flex {
+                    flex-direction: column;
+                    gap: 15px !important;
+                }
+
+            .btn-lg {
+                width: 100%;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .hero-banner, .hero-slide {
+                height: 400px;
+            }
+
+            .hero-content h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Section Titles */
+        .section-title {
+            position: relative;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+            .section-title:after {
+                content: '';
+                position: absolute;
+                bottom: -10px;
+                left: 0;
+                width: 50px;
+                height: 3px;
+                background: #007bff;
+            }
+
+        /* Featured Products */
         .featured-products-slider {
             margin: 0 -10px;
         }
 
         .slider-item {
             padding: 0 10px;
-        }
-
-        .slick-prev:before,
-        .slick-next:before {
-            color: #007bff;
-        }
-
-        .slick-dots li button:before {
-            font-size: 12px;
-        }
-
-        .card {
             transition: transform 0.3s;
         }
 
-            .card:hover {
+            .slider-item:hover {
                 transform: translateY(-5px);
             }
+
+        .card {
+            transition: all 0.3s;
+            border: none;
+            overflow: hidden;
+        }
+
+            .card:hover {
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            }
+
+        .card-img-top {
+            height: 200px;
+            object-fit: contain;
+            padding: 20px;
+        }
+
+        .badge-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        /* Deal of the Day */
+        .deal-countdown {
+            display: flex;
+            align-items: center;
+        }
+
+        .countdown-label {
+            margin-right: 10px;
+            font-weight: 500;
+        }
+
+        .countdown-timer {
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        /* Testimonials */
+        .testimonial-item {
+            padding: 0 15px;
+        }
+
+        .testimonial-slider .card {
+            height: 100%;
+        }
+
+        /* Newsletter */
+        .newsletter {
+            border-radius: 0.5rem;
+        }
+
+        /* Brands */
+        .brand-item {
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100px;
+        }
+
+            .brand-item img {
+                max-height: 80px;
+                width: auto;
+                filter: grayscale(100%);
+                opacity: 0.7;
+                transition: all 0.3s;
+            }
+
+            .brand-item:hover img {
+                filter: grayscale(0);
+                opacity: 1;
+            }
+
+        /* Category Cards */
+        .category-card {
+            text-decoration: none;
+            color: inherit;
+        }
+
+            .category-card:hover {
+                text-decoration: none;
+            }
+
+        .category-icon {
+            text-align: center;
+            padding: 20px 0;
+            font-size: 2.5rem;
+            color: #007bff;
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .hero-slide {
+                height: 400px;
+                text-align: center;
+                justify-content: center;
+            }
+
+            .hero-content {
+                max-width: 100%;
+            }
+
+                .hero-content h1 {
+                    font-size: 2rem;
+                }
+
+            .countdown-timer {
+                font-size: 1rem;
+            }
+        }
     </style>
 }
 
@@ -66,31 +649,71 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
     <script>
         $(document).ready(function(){
-            $('.featured-products-slider').slick({
+            // Only initialize if there are products
+            if ($('.slider-item').length > 0) {
+                $('.featured-products-slider').slick({
+                    dots: true,
+                    infinite: true,
+                    speed: 500,
+                    slidesToShow: 4,
+                    slidesToScroll: 1,
+                    autoplay: true,
+                    autoplaySpeed: 2000,
+                    responsive: [
+                        {
+                            breakpoint: 992,
+                            settings: {
+                                slidesToShow: 3,
+                                slidesToScroll: 1
+                            }
+                        },
+                        {
+                            breakpoint: 768,
+                            settings: {
+                                slidesToShow: 2,
+                                slidesToScroll: 1
+                            }
+                        },
+                        {
+                            breakpoint: 576,
+                            settings: {
+                                slidesToShow: 1,
+                                slidesToScroll: 1
+                            }
+                        }
+                    ]
+                });
+            }
+        });
+    </script>
+    <script>
+        $(document).ready(function(){
+            // Hero Slider
+            $('.hero-slider').slick({
                 dots: true,
                 infinite: true,
                 speed: 500,
-                slidesToShow: 4,
+                fade: true,
+                cssEase: 'linear',
+                autoplay: true,
+                autoplaySpeed: 1000,
+                arrows: false
+            });
+
+
+
+            // Testimonial Slider
+            $('.testimonial-slider').slick({
+                dots: true,
+                infinite: true,
+                speed: 500,
+                slidesToShow: 2,
                 slidesToScroll: 1,
                 autoplay: true,
-                autoplaySpeed: 2000,
+                autoplaySpeed: 4000,
                 responsive: [
                     {
-                        breakpoint: 992,
-                        settings: {
-                            slidesToShow: 3,
-                            slidesToScroll: 1
-                        }
-                    },
-                    {
                         breakpoint: 768,
-                        settings: {
-                            slidesToShow: 2,
-                            slidesToScroll: 1
-                        }
-                    },
-                    {
-                        breakpoint: 576,
                         settings: {
                             slidesToShow: 1,
                             slidesToScroll: 1
@@ -98,6 +721,64 @@
                     }
                 ]
             });
+
+            // Brand Slider
+            $('.brand-slider').slick({
+                dots: false,
+                infinite: true,
+                speed: 500,
+                slidesToShow: 6,
+                slidesToScroll: 1,
+                autoplay: true,
+                autoplaySpeed: 2000,
+                responsive: [
+                    {
+                        breakpoint: 992,
+                        settings: {
+                            slidesToShow: 4
+                        }
+                    },
+                    {
+                        breakpoint: 768,
+                        settings: {
+                            slidesToShow: 3
+                        }
+                    },
+                    {
+                        breakpoint: 576,
+                        settings: {
+                            slidesToShow: 2
+                        }
+                    }
+                ]
+            });
+
+            // Countdown Timer
+            function updateCountdown() {
+                const countdown = $('.countdown-timer');
+                if (countdown.length) {
+                    const endTime = new Date(countdown.data('endtime')).getTime();
+                    const now = new Date().getTime();
+                    const distance = endTime - now;
+
+                    if (distance < 0) {
+                        countdown.html('EXPIRED');
+                        return;
+                    }
+
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    countdown.find('.hours').text(hours.toString().padStart(2, '0'));
+                    countdown.find('.minutes').text(minutes.toString().padStart(2, '0'));
+                    countdown.find('.seconds').text(seconds.toString().padStart(2, '0'));
+                }
+            }
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
         });
     </script>
+
 }
