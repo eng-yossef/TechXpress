@@ -1,0 +1,203 @@
+﻿@{
+    ViewData["Title"] = "Inventory Performance Report";
+    Layout = "_AdminLayout";
+}
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Inventory Performance Analysis</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="alert alert-danger">
+                @ViewBag.ErrorMessage
+            </div>
+        }
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Inventory Category:</label>
+                    <select class="form-control select2" style="width: 100%;">
+                        <option selected="selected">All Categories</option>
+                        <option>Electronics</option>
+                        <option>Clothing</option>
+                        <option>Home Goods</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Stock Status:</label>
+                    <select class="form-control select2" style="width: 100%;">
+                        <option selected="selected">All Items</option>
+                        <option>Low Stock</option>
+                        <option>Overstock</option>
+                        <option>Out of Stock</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Turnover Rate:</label>
+                    <select class="form-control select2" style="width: 100%;">
+                        <option selected="selected">All Rates</option>
+                        <option>Fast Moving</option>
+                        <option>Medium Moving</option>
+                        <option>Slow Moving</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-content">
+            @Html.Raw(ViewBag.Report)
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Inventory Turnover</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="turnoverChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Stock Levels</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="stockLevelChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-default" onclick="window.print()">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <div class="float-right">
+            <button class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Export to Excel
+            </button>
+            <button class="btn btn-danger ml-2">
+                <i class="fas fa-file-pdf"></i> Export to PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/plugins/select2/css/select2.min.css">
+    <style>
+        .report-content {
+            white-space: pre-wrap;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+
+            .report-content h3 {
+                color: #3c8dbc;
+                margin-top: 20px;
+            }
+
+            .report-content table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 15px 0;
+            }
+
+            .report-content th, .report-content td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+
+            .report-content th {
+                background-color: #f2f2f2;
+            }
+
+            .report-content tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/plugins/select2/js/select2.full.min.js"></script>
+    <script src="~/plugins/chart.js/Chart.min.js"></script>
+    <script>
+        $(function () {
+            // Initialize Select2 Elements
+            $('.select2').select2();
+
+            // Turnover Chart
+            var turnoverCtx = document.getElementById('turnoverChart').getContext('2d');
+            var turnoverChart = new Chart(turnoverCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Inventory Turnover Ratio',
+                        data: [2.5, 2.8, 3.1, 2.9, 3.2, 3.5],
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Stock Level Chart
+            var stockLevelCtx = document.getElementById('stockLevelChart').getContext('2d');
+            var stockLevelChart = new Chart(stockLevelCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Optimal Stock', 'Low Stock', 'Overstock', 'Out of Stock'],
+                    datasets: [{
+                        data: [45, 15, 25, 5],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.5)',
+                            'rgba(255, 206, 86, 0.5)',
+                            'rgba(255, 99, 132, 0.5)',
+                            'rgba(201, 203, 207, 0.5)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(201, 203, 207, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+    </script>
+}

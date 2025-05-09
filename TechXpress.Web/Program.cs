@@ -87,6 +87,7 @@ namespace TechXpress.Web
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ICustomerService, CustomerService>(); // Register the service
             builder.Services.AddScoped<Areas.Admin.Services.IImageService, Areas.Admin.Services.ImageService>();
+            builder.Services.AddScoped<IAIAssistantService, AIAssistantService>();
 
 
 

@@ -23,12 +23,12 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
-    
+
 
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TechXpress.Web.styles.css" asp-append-version="true" />
-	<link rel="stylesheet" href="~/css/stars.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/stars.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Ai.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/chatbot.css" asp-append-version="true" />
@@ -100,7 +100,7 @@
                                     <div class="avatar-sm me-2">
                                         <div class="avatar-title bg-white text-primary rounded-circle">
                                         </div>
-                                            <i class="fas fa-user"></i>
+                                        <i class="fas fa-user"></i>
                                     </div>
                                     <span>@UserManager.GetUserName(User)</span>
                                 </button>
@@ -132,7 +132,7 @@
                         }
                     </div>
                     <img src="@profileUrl" alt="Profile" class="rounded-circle"
-                         style="width: 40px; height: 40px; margin-left: 10px; object-fit: cover; display: block; margin-right: auto; margin-left: auto;" />
+                    style="width: 40px; height: 40px; margin-left: 10px; object-fit: cover; display: block; margin-right: auto; margin-left: auto;" />
 
                 </div>
             </div>
@@ -225,7 +225,9 @@
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
+            @await Html.PartialAsync("_ChatBot")
         </main>
+
     </div>
 
     <!-- Footer -->
@@ -300,6 +302,139 @@
 
 
     <script src="~/js/products.js" asp-append-version="true"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Toggle chatbot visibility
+            $('.ai-chatbot-toggle').click(function() {
+                $('.ai-chatbot-window').toggle('fast');
+                $(this).toggleClass('btn-primary btn-secondary');
+            });
+
+            // Close chatbot
+            $('.close-chatbot').click(function() {
+                $('.ai-chatbot-window').hide('fast');
+                $('.ai-chatbot-toggle').removeClass('btn-secondary').addClass('btn-primary');
+            });
+
+            // Handle sending messages
+            $('.send-message').click(sendMessage);
+            $('.chatbot-input').keypress(function(e) {
+                if (e.which === 13) { // Enter key
+                    sendMessage();
+                }
+            });
+
+            // Suggested questions
+            $('.suggested-question').click(function(e) {
+                e.preventDefault();
+                const question = $(this).text();
+                $('.chatbot-input').val(question);
+                sendMessage();
+            });
+
+            function sendMessage() {
+                const input = $('.chatbot-input');
+                const message = input.val().trim();
+
+                if (message === '') return;
+
+                // Add user message to chat
+                addMessage(message, 'user');
+                input.val('');
+
+                // Show typing indicator
+                const typingIndicator = $('<div class="bot-message message typing-indicator">')
+                    .html('<span></span><span></span><span></span>')
+                    .appendTo('.chatbot-messages');
+
+                // Scroll to bottom
+                $('.chatbot-messages').scrollTop($('.chatbot-messages')[0].scrollHeight);
+
+                // Send to AI service
+                $.post('/Test/RespondToCustomerQuery', { query: message })
+                    .done(function(response) {
+                        typingIndicator.remove();
+                        addMessage(response, 'bot');
+                    })
+                    .fail(function() {
+                        typingIndicator.remove();
+                        addMessage("Sorry, I'm having trouble connecting to the service. Please try again later.", 'bot');
+                    });
+            }
+
+            function addMessage(text, sender) {
+                const messageClass = sender === 'user' ? 'user-message' : 'bot-message';
+                const messageElement = $('<div class="message ' + messageClass + '">')
+                    .text(text)
+                    .hide()
+                    .appendTo('.chatbot-messages');
+
+                messageElement.fadeIn('fast');
+                $('.chatbot-messages').scrollTop($('.chatbot-messages')[0].scrollHeight);
+            }
+        });
+    </script>
+    
+    <script>
+        $(document).ready(function() {
+                    // 1. Close via Close Button
+        $('[data-dismiss="modal"]').click(function() {
+            aiDescriptionModal.modal('hide');
+        });
+
+        // 2. Close via Escape Key
+        $(document).keydown(function(e) {
+            if (e.key === "Escape" && aiDescriptionModal.hasClass('show')) {
+                aiDescriptionModal.modal('hide');
+            }
+        });
+
+        // 3. Close by Clicking Outside Modal
+        aiDescriptionModal.click(function(event) {
+            if ($(event.target).is('.modal')) {
+                aiDescriptionModal.modal('hide');
+            }
+        });
+
+        // 4. Programmatic Close (if needed elsewhere)
+        window.closeAIModal = function() {
+            aiDescriptionModal.modal('hide');
+        };
+
+
+
+            // AI Description Button Click Handler
+            $('.ai-description-btn').click(function() {
+                const productId = $(this).data('product-id');
+                $('#aiDescriptionModal').modal('show');
+
+                // Load AI description
+                $.get('/Test/GenerateProductDescription', { Id: productId })
+                    .done(function(data) {
+                        $('#aiDescriptionContent').html('<div class="ai-generated-content">' +
+                            data.replace(/\n/g, '<br>') + '</div>');
+                    })
+                    .fail(function() {
+                        $('#aiDescriptionContent').html(
+                            '<div class="alert alert-danger">Failed to generate description. Please try again.</div>'
+                        );
+                    });
+            });
+
+            // Reset modal content when closed
+            $('#aiDescriptionModal').on('hidden.bs.modal', function() {
+                $('#aiDescriptionContent').html(
+                    '<div class="text-center">' +
+                    '   <div class="spinner-border text-primary" role="status">' +
+                    '       <span class="sr-only">Loading...</span>' +
+                    '   </div>' +
+                    '   <p>Generating AI description...</p>' +
+                    '</div>'
+                );
+            });
+        });
+    </script>
 	<script>
 		$(function () {
 			// Initialize tooltips
