@@ -137,6 +137,7 @@ namespace TechXpress.Web
 
             // Add response caching services
             builder.Services.AddResponseCaching();
+            app.UseStatusCodePagesWithReExecute("/Error/NotFound");
             app.UseResponseCaching();
 
             // Configure endpoint routing for Areas (Admin section)

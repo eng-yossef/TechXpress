@@ -4,12 +4,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @{
     var profileUrl = User?.FindFirst("ProfilePictureUrl")?.Value ?? "/images/download.jpeg";
-    var x = 0;
-    if (ViewBag.CartItemCount > 0)
-    {
-        x = ViewBag.CartItemCount;
-    }
-    // else: x remains unchanged (old value is preserved)
+    
 
 }
 <!DOCTYPE html>
@@ -135,9 +130,6 @@
                             <!-- Cart with badge -->
                             <a class="btn btn-icon btn-outline-light position-relative me-3" asp-controller="Cart" asp-action="Index">
                                 <i class="fas fa-shopping-cart"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    @(x)
-                                </span>
                             </a>
 
                             <!-- User Dropdown -->

@@ -57,14 +57,13 @@ namespace TechXpress.Web.Controllers
 
             ViewData["OrderId"] = Id;
 
-            return View(order); // هنا نمرر الموديل
+            return View(order); 
         }
 
 
         [HttpPost]
         public async Task<IActionResult> CreatePaymentIntent([FromBody] CreateIntentRequest req)
         {
-            // 1. أنشئ الـ PaymentIntent في Stripe مع metadata للأوردر
             var intent = await _stripeService
                 .CreatePaymentIntentAsync(req.Amount, req.Currency, req.OrderId);
 
@@ -101,7 +100,7 @@ namespace TechXpress.Web.Controllers
 
                 foreach (var item in orderDetails)
                 {
-                    var product = item.Product; // Already loaded by Include()
+                    var product = item.Product; 
 
                     if (product != null && product.StockQuantity >= item.Quantity)
                     {
@@ -127,7 +126,6 @@ namespace TechXpress.Web.Controllers
 
             await _unitOfWork.CompleteAsync();
 
-            //return RedirectToAction("OrderConfirmation", "Orders", new { id = orderId });
             return RedirectToAction("Index", "Orders");
 
         }

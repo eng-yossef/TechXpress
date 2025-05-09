@@ -410,138 +410,6 @@ namespace TechXpress.Web.Controllers
                 return RedirectToAction("Index");
             }
         }
-        //[Authorize]
-        //[HttpPost("checkout")]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> ProcessCheckout([FromForm] CheckoutViewModel model)
-        //{
-        //    if (model.SameAsShipping)
-        //    {
-        //        ModelState.Remove("BillingAddress.FirstName");
-        //        ModelState.Remove("BillingAddress.LastName");
-        //        ModelState.Remove("BillingAddress.AddressLine1");
-        //        ModelState.Remove("BillingAddress.AddressLine2");
-        //        ModelState.Remove("BillingAddress.City");
-        //        ModelState.Remove("BillingAddress.State");
-        //        ModelState.Remove("BillingAddress.ZipCode");
-        //        ModelState.Remove("BillingAddress.Country");
-        //        ModelState.Remove("BillingAddress.PhoneNumber");
-
-        //        model.BillingAddress = model.ShippingAddress;
-        //    }
-
-        //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        //    var cart = await _cartService.GetOrCreateUserCartAsync(userId,includeItems: true);
-        //    if (cart == null || cart.Items == null || !cart.Items.Any())
-        //    {
-        //        TempData["ErrorMessage"] = "Your cart is empty.";
-        //        return RedirectToAction("Index", "Cart");
-        //    }
-
-        //    decimal subtotal = cart.Items.Sum(item => (item.Product?.Price ?? 0m) * item.Quantity);
-        //    decimal tax = subtotal * 0.1m;
-        //    decimal shipping = subtotal > 50 ? 0m : 5.99m;
-        //    decimal totalAmount = subtotal + tax + shipping;
-
-        //    if (!ModelState.IsValid)
-        //    {
-        //        model.Cart = new CartViewModel
-        //        {
-        //            CartId = cart.Id.ToString(),
-        //            Items = cart.Items.Select(item => new CartItemViewModel
-        //            {
-        //                ItemId = item.Id.ToString(),
-        //                Quantity = item.Quantity,
-        //                Product = new ProductViewModel
-        //                {
-        //                    Id = item.ProductId,
-        //                    Name = item.Product?.Name,
-        //                    Price = item.Product?.Price ?? 0m
-        //                },
-        //                TotalPrice = (int)((item.Product?.Price ?? 0m) * item.Quantity)
-        //            }).ToList(),
-        //            Subtotal = subtotal,
-        //            Tax = tax,
-        //            Shipping = shipping,
-        //            Total = totalAmount
-        //        };
-
-        //        ViewData["ErrorMessage"] = "There are errors in the form. Please review your information.";
-        //        return View("Checkout", model);
-        //    }
-
-
-
-
-        //    // Use your shared DbContext from services if accessible
-        //    var dbContext = _productService.GetDbContext(); // You must expose it in your service
-        //    using var transaction = await dbContext.Database.BeginTransactionAsync();
-
-        //    try
-        //    {
-        //        // 1. Process payment (mocked for demo)
-        //        if (!ProcessPayment(model))
-        //        {
-        //            TempData["ErrorMessage"] = "Payment processing failed. Please try again.";
-        //            return RedirectToAction("Checkout");
-        //        }
-
-        //        // 1. Check and decrease product quantity
-        //        foreach (var item in cart.Items)
-        //        {
-        //            var product = await _productService.GetByIdAsync(item.ProductId);
-        //            if (product == null || product.StockQuantity < item.Quantity)
-        //            {
-        //                TempData["ErrorMessage"] = $"Not enough stock for {product?.Name ?? "a product"}.";
-        //                return RedirectToAction("Checkout");
-        //            }
-
-        //            product.StockQuantity -= item.Quantity;
-        //            await _productService.UpdateAsync(product);
-        //        }
-
-        //        // 2. Create Order
-        //        var order = new Order
-        //        {
-        //            UserId = userId,
-        //            ShippingAddress = model.ShippingAddress,
-        //            PaymentStatus = PaymentStatus.Pending,
-        //            OrderStatus = OrderStatus.Pending,
-        //            OrderDate = DateTime.UtcNow,
-        //            TotalAmount = totalAmount
-        //        };
-
-        //        await _orderService.AddOrderAsync(order);
-
-        //        // 3. Create OrderDetails
-        //        var orderDetails = cart.Items.Select(item => new OrderDetail
-        //        {
-        //            OrderId = order.Id,
-        //            ProductId = item.ProductId,
-        //            Quantity = item.Quantity,
-        //            Price = item.Product?.Price ?? 0m
-        //        });
-
-        //        await _orderDetailsService.AddRangeAsync(orderDetails);
-
-        //        // 4. Clear Cart
-        //        await _cartService.ClearCartAsync(cart.Id);
-
-        //        // 5. Commit transaction
-        //        await transaction.CommitAsync();
-
-        //        TempData["SuccessMessage"] = "Order placed successfully!";
-        //        return RedirectToAction("Index", "Orders");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        await transaction.RollbackAsync();
-        //        _logger.LogError(ex, "Error processing checkout.");
-        //        TempData["ErrorMessage"] = "There was an error processing your order. Please try again.";
-        //        return RedirectToAction("Checkout");
-        //    }
-        //}
 
         [Authorize]
         [HttpPost("checkout")]
@@ -651,10 +519,6 @@ namespace TechXpress.Web.Controllers
 
         // ---------------------------- Helper Methods ----------------------------
 
-        private string GetUserId()
-        {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier);
-        }
 
         private async Task<ShoppingCart> GetOrCreateCartAsync(bool includeItems = false)
         {
@@ -707,6 +571,10 @@ namespace TechXpress.Web.Controllers
                     ImageUrl = item.Product?.ImageUrl
                 }).ToList()
             };
+        }
+        private string GetUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
     }
 }
