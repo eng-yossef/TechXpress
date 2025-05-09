@@ -62,12 +62,12 @@
                             <td>@item.Category?.Name</td>
                             <td data-order="@item.Price">@item.Price.ToString("C")</td>
                             <td>
-                                <span class="badge @(item.StockQuantity > 10 ? "badge-success" : item.StockQuantity > 0 ? "badge-warning" : "badge-danger")">
+                                <span style="color:black" class="badge @(item.StockQuantity > 10 ? "badge-success" : item.StockQuantity > 0 ? "badge-warning" : "badge-danger")">
                                     @item.StockQuantity
                                 </span>
                             </td>
                             <td>
-                                <span class="badge @(item.IsActive ? "badge-success" : "badge-secondary")">
+                                <span style="color:black"  class="badge @(item.IsActive ? "badge-success" : "badge-secondary")">
                                     @(item.IsActive ? "Active" : "Inactive")
                                 </span>
                             </td>
