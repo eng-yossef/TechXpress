@@ -78,56 +78,69 @@ namespace TechXpress.Web.Controllers
         {
             var intent = await _stripeService.RetrievePaymentIntentAsync(payment_intent);
             var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var context = _productService.GetDbContext();
 
-            var payment = new Payment
+            // Start a transaction
+            using var transaction = await context.Database.BeginTransactionAsync();
+
+            try
             {
-                OrderId = orderId,
-                UserId = userId,
-                Amount = intent.AmountReceived / 100m,
-                Method = PaymentMethod.CreditCard,
-                Status = intent.Status == "succeeded" ? PaymentStatus.Completed : PaymentStatus.Failed,
-                TransactionId = intent.Id,
-                ProcessorResponse = intent.Status,
-                PaymentDate = DateTime.UtcNow,
-                ProcessedDate = DateTime.UtcNow
-            };
-
-            await _unitOfWork.Payments.AddAsync(payment);
-
-            if (intent.Status == "succeeded")
-            {
-                var orderDetails = await _orderDetailsService.GetDetailsForOrderAsync(orderId);
-
-                foreach (var item in orderDetails)
+                var payment = new Payment
                 {
-                    var product = item.Product; 
+                    OrderId = orderId,
+                    UserId = userId,
+                    Amount = intent.AmountReceived / 100m,
+                    Method = PaymentMethod.CreditCard,
+                    Status = intent.Status == "succeeded" ? PaymentStatus.Completed : PaymentStatus.Failed,
+                    TransactionId = intent.Id,
+                    ProcessorResponse = intent.Status,
+                    PaymentDate = DateTime.UtcNow,
+                    ProcessedDate = DateTime.UtcNow
+                };
 
-                    if (product != null && product.StockQuantity >= item.Quantity)
+                await _unitOfWork.Payments.AddAsync(payment);
+
+                if (intent.Status == "succeeded")
+                {
+                    var orderDetails = await _orderDetailsService.GetDetailsForOrderAsync(orderId);
+
+                    foreach (var item in orderDetails)
                     {
-                        product.StockQuantity -= item.Quantity;
-                        await _productService.UpdateAsync(product);
+                        var product = item.Product;
+
+                        if (product != null && product.StockQuantity >= item.Quantity)
+                        {
+                            product.StockQuantity -= item.Quantity;
+                            await _productService.UpdateAsync(product);
+                        }
+                        else
+                        {
+                            TempData["ErrorMessage"] = $"Not enough stock for product {product?.Name ?? "Unknown"}.";
+                            return RedirectToAction("Checkout", "Cart");
+                        }
                     }
-                    else
+
+                    await _orderService.ProcessOrderPaymentAsync(orderId, intent.Id);
+
+                    var cart = await _cartService.GetOrCreateUserCartAsync(userId);
+                    if (cart != null)
                     {
-                        //_logger.LogWarning($"Insufficient stock for product ID {item.ProductId}.");
-                        TempData["ErrorMessage"] = $"Not enough stock for product {product?.Name ?? "Unknown"}.";
-                        return RedirectToAction("Checkout", "Cart");
+                        await _cartService.ClearCartAsync(cart.Id);
                     }
                 }
 
-                await _orderService.ProcessOrderPaymentAsync(orderId, intent.Id);
+                await _unitOfWork.CompleteAsync();
+                await transaction.CommitAsync();
 
-                var cart = await _cartService.GetOrCreateUserCartAsync(userId);
-                if (cart != null)
-                {
-                    await _cartService.ClearCartAsync(cart.Id);
-                }
+                return RedirectToAction("Index", "Orders");
             }
-
-            await _unitOfWork.CompleteAsync();
-
-            return RedirectToAction("Index", "Orders");
-
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                //_logger.LogError(ex, "Transaction failed during payment confirmation.");
+                TempData["ErrorMessage"] = "An error occurred while processing the payment.";
+                return RedirectToAction("Checkout", "Cart");
+            }
         }
 
     }

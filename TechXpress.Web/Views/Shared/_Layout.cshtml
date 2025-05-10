@@ -4,7 +4,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @{
     var profileUrl = User?.FindFirst("ProfilePictureUrl")?.Value ?? "/images/download.jpeg";
-    
+
 
 }
 <!DOCTYPE html>
@@ -79,31 +79,35 @@
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
                                     <li>
                                         <a class="dropdown-item @(ViewContext.RouteData.Values["controller"].ToString() == "Dashboard" ? "active" : "")"
-                                           asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                                        asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
                                             <i class="fas fa-tachometer-alt me-2"></i> Dashboard
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <a class="dropdown-item @(ViewContext.RouteData.Values["controller"].ToString() == "CategoryManagement" ? "active" : "")"
-                                           asp-area="Admin" asp-controller="CategoryManagement" asp-action="Index">
+                                        asp-area="Admin" asp-controller="CategoryManagement" asp-action="Index">
                                             <i class="fas fa-tags me-2"></i> Categories
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item @(ViewContext.RouteData.Values["controller"].ToString() == "ProductsManagement" ? "active" : "")"
-                                           asp-area="Admin" asp-controller="ProductsManagement" asp-action="Index">
+                                        asp-area="Admin" asp-controller="ProductsManagement" asp-action="Index">
                                             <i class="fas fa-boxes me-2"></i> Products
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item @(ViewContext.RouteData.Values["controller"].ToString() == "OrderManagement" ? "active" : "")"
-                                           asp-area="Admin" asp-controller="OrderManagement" asp-action="Index">
-                                            <i class="fas fa-shopping-cart me-2"></i> Orders
-                                        </a>
-                                    </li>
-                                   
+                                    @if (SignInManager.IsSignedIn(User))
+                                    {
+
+                                        <li>
+                                            <a class="dropdown-item @(ViewContext.RouteData.Values["controller"].ToString() == "OrderManagement" ? "active" : "")"
+                                            asp-area="Admin" asp-controller="OrderManagement" asp-action="Index">
+                                                <i class="fas fa-shopping-cart me-2"></i> Orders
+                                            </a>
+                                        </li>
+                                    }
+
                                     <li>
                                         <a class="dropdown-item @(ViewContext.RouteData.Values["controller"].ToString() == "CustomerManagement" ? "active" : "")"
                                            asp-area="Admin" asp-controller="CustomerManagement" asp-action="Index">
