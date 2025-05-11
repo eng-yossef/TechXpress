@@ -242,9 +242,166 @@ namespace TechXpress.Web.Services.Implementations
             return string.Join(", ", categories);
         }
         #endregion
+
+
+        public async Task<SalesPerformanceReport> GenerateSalesPerformanceReport(List<Order> orders, DateTime startDate, DateTime endDate)
+        {
+            var prompt = new StringBuilder("Generate a comprehensive sales performance report with these sections:\n\n");
+            prompt.AppendLine($"Time Period: {startDate:d} to {endDate:d}");
+            prompt.AppendLine($"Total Orders: {orders.Count}");
+            prompt.AppendLine($"Total Revenue: ${orders.Sum(o => o.TotalAmount):N2}");
+
+            prompt.AppendLine("\n1. Overview:");
+            prompt.AppendLine("- Overall sales trend (daily/weekly)");
+            prompt.AppendLine("- Comparison to previous period");
+            prompt.AppendLine("- Key highlights and anomalies");
+
+            prompt.AppendLine("\n2. Product Performance:");
+            prompt.AppendLine("- Top 5 selling products by revenue");
+            prompt.AppendLine("- Top 5 selling products by quantity");
+            prompt.AppendLine("- Underperforming products");
+
+            prompt.AppendLine("\n3. Customer Insights:");
+            prompt.AppendLine("- Customer acquisition trends");
+            prompt.AppendLine("- Repeat customer rate");
+            prompt.AppendLine("- Average order value by customer segment");
+
+            prompt.AppendLine("\n4. Recommendations:");
+            prompt.AppendLine("- Inventory adjustments needed");
+            prompt.AppendLine("- Marketing opportunities");
+            prompt.AppendLine("- Process improvements");
+
+            var reportContent = await GetAIResponse(prompt.ToString());
+
+            return new SalesPerformanceReport
+            {
+                ReportDate = DateTime.Now,
+                PeriodStart = startDate,
+                PeriodEnd = endDate,
+                Content = reportContent,
+                Metrics = CalculateSalesMetrics(orders)
+            };
+        }
+
+
+        public async Task<InventoryAnalysisReport> GenerateInventoryAnalysisReport(List<ProductViewModel> products)
+        {
+            var prompt = new StringBuilder("Generate an inventory analysis report with these sections:\n\n");
+            prompt.AppendLine($"Total Products: {products.Count}");
+            prompt.AppendLine($"Total Inventory Value: ${products.Sum(p => p.Price * p.StockQuantity):N2}");
+
+            prompt.AppendLine("\n1. Stock Status:");
+            prompt.AppendLine("- Products running low (below reorder threshold)");
+            prompt.AppendLine("- Overstocked products");
+            prompt.AppendLine("- Products out of stock");
+
+            prompt.AppendLine("\n2. Turnover Analysis:");
+            prompt.AppendLine("- Fast moving products");
+            prompt.AppendLine("- Slow moving products");
+            prompt.AppendLine("- Dead stock");
+
+            prompt.AppendLine("\n3. Recommendations:");
+            prompt.AppendLine("- Immediate reorder suggestions");
+            prompt.AppendLine("- Discount strategies for slow movers");
+            prompt.AppendLine("- Potential product discontinuations");
+
+            var reportContent = await GetAIResponse(prompt.ToString());
+
+            return new InventoryAnalysisReport
+            {
+                ReportDate = DateTime.Now,
+                Content = reportContent,
+                InventoryMetrics = CalculateInventoryMetrics(products)
+            };
+        }
+
+
+
+        public async Task<CustomerBehaviorReport> GenerateCustomerBehaviorReport(List<ApplicationUser> customers, List<Order> orders, List<Review> reviews)
+        {
+            var prompt = new StringBuilder("Generate a customer behavior analysis report with these sections:\n\n");
+            prompt.AppendLine($"Total Customers: {customers.Count}");
+            prompt.AppendLine($"Total Orders Analyzed: {orders.Count}");
+            prompt.AppendLine($"Total Reviews Analyzed: {reviews.Count}");
+
+            prompt.AppendLine("\n1. Customer Segmentation:");
+            prompt.AppendLine("- High value customers");
+            prompt.AppendLine("- Frequent shoppers");
+            prompt.AppendLine("- One-time buyers");
+
+            prompt.AppendLine("\n2. Purchase Patterns:");
+            prompt.AppendLine("- Peak shopping times");
+            prompt.AppendLine("- Preferred product categories");
+            prompt.AppendLine("- Average order value trends");
+
+            prompt.AppendLine("\n3. Sentiment Analysis:");
+            prompt.AppendLine("- Overall customer satisfaction");
+            prompt.AppendLine("- Common praise themes");
+            prompt.AppendLine("- Frequent complaints");
+
+            prompt.AppendLine("\n4. Recommendations:");
+            prompt.AppendLine("- Loyalty program improvements");
+            prompt.AppendLine("- Targeted marketing strategies");
+            prompt.AppendLine("- Customer service enhancements");
+
+            var reportContent = await GetAIResponse(prompt.ToString());
+
+            return new CustomerBehaviorReport
+            {
+                ReportDate = DateTime.Now,
+                Content = reportContent,
+                BehaviorMetrics = CalculateBehaviorMetrics(customers, orders, reviews)
+            };
+        }
+
+     
+
+
+
+
+
+        private SalesMetrics CalculateSalesMetrics(List<Order> orders)
+        {
+            return new SalesMetrics
+            {
+                TotalRevenue = orders.Sum(o => o.TotalAmount),
+                AverageOrderValue = orders.Average(o => o.TotalAmount),
+                OrderCount = orders.Count,
+                ProductsSold = orders.Sum(o => o.OrderDetails.Sum(od => od.Quantity))
+            };
+        }
+
+
+        private InventoryMetrics CalculateInventoryMetrics(List<ProductViewModel> products)
+        {
+            return new InventoryMetrics
+            {
+                TotalProducts = products.Count,
+                TotalInventoryValue = products.Sum(p => p.Price * p.StockQuantity),
+                OutOfStockItems = products.Count(p => p.StockQuantity <= 0),
+                LowStockItems = products.Count(p => p.StockQuantity > 0)
+            };
+        }
+
+        private BehaviorMetrics CalculateBehaviorMetrics(List<ApplicationUser> customers, List<Order> orders, List<Review> reviews)
+        {
+            var repeatCustomers = customers.Count(c => orders.Count(o => o.UserId == c.Id) > 1);
+
+            return new BehaviorMetrics
+            {
+                TotalCustomers = customers.Count,
+                RepeatCustomerRate = (decimal)repeatCustomers / customers.Count,
+                AverageRating = reviews.Any() ? (decimal)reviews.Average(r => r.Rating) : 0,
+                AverageOrdersPerCustomer = orders.Any() ? (decimal)orders.Count / customers.Count : 0
+            };
+        }
+
+
+       
+
     }
 
- 
+
 
     public class MarketData
     {
@@ -259,4 +416,64 @@ namespace TechXpress.Web.Services.Implementations
         public List<string> UpcomingHolidays { get; set; }
         public string HistoricalSalesData { get; set; }
     }
+
+    public class SalesPerformanceReport
+    {
+        public DateTime ReportDate { get; set; }
+        public DateTime PeriodStart { get; set; }
+        public DateTime PeriodEnd { get; set; }
+        public string Content { get; set; }
+        public SalesMetrics Metrics { get; set; }
+    }
+
+    public class CustomerBehaviorReport
+    {
+        public DateTime ReportDate { get; set; }
+        public string Content { get; set; }
+        public BehaviorMetrics BehaviorMetrics { get; set; }
+    }
+
+    
+
+
+
+
+
+
+    public class SalesMetrics
+    {
+        public decimal TotalRevenue { get; set; }
+        public decimal AverageOrderValue { get; set; }
+        public int OrderCount { get; set; }
+        public int ProductsSold { get; set; }
+    }
+
+
+    public class InventoryAnalysisReport
+    {
+        public DateTime ReportDate { get; set; }
+        public string Content { get; set; }
+        public InventoryMetrics InventoryMetrics { get; set; }
+    }
+
+
+
+    public class InventoryMetrics
+    {
+        public int TotalProducts { get; set; }
+        public decimal TotalInventoryValue { get; set; }
+        public int OutOfStockItems { get; set; }
+        public int LowStockItems { get; set; }
+    }
+
+    public class BehaviorMetrics
+    {
+        public int TotalCustomers { get; set; }
+        public decimal RepeatCustomerRate { get; set; }
+        public decimal AverageRating { get; set; }
+        public decimal AverageOrdersPerCustomer { get; set; }
+    }
+
+
+  
 }

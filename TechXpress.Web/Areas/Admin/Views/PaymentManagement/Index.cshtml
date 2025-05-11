@@ -1,0 +1,54 @@
+﻿@using TechXpress.Data.Models
+@model IEnumerable<TechXpress.Data.Models.Payment>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Payment Management";
+	Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>Payment List</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Order ID</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Transaction ID</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var payment in Model)
+        {
+            <tr>
+                <td>@payment.Id</td>
+                <td>@payment.OrderId</td>
+                <td>@payment.Amount.ToString("C")</td>
+                <td>@payment.Status</td>
+                <td>@payment.TransactionId</td>
+                <td>
+                    <a asp-action="Details" asp-route-paymentId="@payment.Id" class="btn btn-sm btn-info">Details</a>
+
+                    @if (payment.Status == PaymentStatus.Pending)
+                    {
+                        <a asp-action="ProcessPayment" asp-route-paymentId="@payment.Id" class="btn btn-sm btn-success">Process</a>
+                    }
+
+                    @if (payment.Status == PaymentStatus.Completed)
+                    {
+                        <form asp-action="RefundPayment" asp-route-paymentId="@payment.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Are you sure you want to refund this payment?');">Refund</button>
+                        </form>
+                    }
+
+                    <form asp-action="MarkAsFailed" asp-route-paymentId="@payment.Id" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Mark as failed?');">Mark Failed</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

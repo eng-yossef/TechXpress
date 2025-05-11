@@ -1,0 +1,46 @@
+﻿@model TechXpress.Data.Models.Payment
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Payment Details";
+	Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>Payment Details</h2>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <td>@Model.Id</td>
+    </tr>
+    <tr>
+        <th>Order ID</th>
+        <td>@Model.OrderId</td>
+    </tr>
+    <tr>
+        <th>Amount</th>
+        <td>@Model.Amount.ToString("C")</td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>@Model.Status</td>
+    </tr>
+    <tr>
+        <th>Transaction ID</th>
+        <td>@Model.TransactionId</td>
+    </tr>
+    <tr>
+        <th>Payment Date</th>
+        <td>@Model.PaymentDate.ToString("f")</td>
+    </tr>
+    <tr>
+        <th>Processor Response</th>
+        <td>@Model.ProcessorResponse</td>
+    </tr>
+    <tr>
+        <th>Processed Date</th>
+        <td>@Model.ProcessedDate?.ToString("f")</td>
+    </tr>
+</table>
+
+<a asp-action="Index" class="btn btn-primary">Back to List</a>

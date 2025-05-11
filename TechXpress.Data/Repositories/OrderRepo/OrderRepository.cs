@@ -64,6 +64,15 @@ namespace TechXpress.Data.Repositories.OrderRepo
                 .ToListAsync();
         }
 
+
+        public async Task<IEnumerable<Order>> getAllAsync() {
+            return await _context.Set<Order>()
+                .Include(o => o.User)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }
         public async Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status)
         {
             return await _context.Set<Order>()

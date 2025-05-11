@@ -1,0 +1,659 @@
+﻿@{
+    ViewData["Title"] = "Reports Dashboard";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div class="mr-3">
+            <h2 class="mb-2">@ViewData["Title"]</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Admin/Dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Reports</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center">
+            <button id="generateAllReports" class="btn btn-primary">
+                <i class="fas fa-sync-alt mr-2"></i>Generate All Reports
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Sales Performance Report Card -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Sales Performance</h6>
+                <div class="dropdown no-arrow">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="salesReportDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-calendar-alt"></i> Date Range
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="salesReportDropdown">
+                        <a class="dropdown-item date-range" href="#" data-days="7">Last 7 Days</a>
+                        <a class="dropdown-item date-range" href="#" data-days="30">Last 30 Days</a>
+                        <a class="dropdown-item date-range" href="#" data-days="90">Last Quarter</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item custom-range" href="#">Custom Range...</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="salesReportContent" class="report-content">
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-line fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-muted">No sales report generated yet</p>
+                        <button class="btn btn-sm btn-primary generate-report" data-report-type="sales">
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+                <div class="report-loading d-none">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p class="mt-2">Generating report...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-right">
+                <button class="btn btn-sm btn-outline-secondary export-report" data-report-type="sales" disabled>
+                    <i class="fas fa-download mr-1"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Analysis Report Card -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Inventory Analysis</h6>
+                <button class="btn btn-sm btn-outline-secondary generate-report" data-report-type="inventory">
+                    <i class="fas fa-sync-alt mr-1"></i> Refresh
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="inventoryReportContent" class="report-content">
+                    <div class="text-center py-5">
+                        <i class="fas fa-boxes fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-muted">No inventory report generated yet</p>
+                        <button class="btn btn-sm btn-primary generate-report" data-report-type="inventory">
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+                <div class="report-loading d-none">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p class="mt-2">Generating report...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-right">
+                <button class="btn btn-sm btn-outline-secondary export-report" data-report-type="inventory" disabled>
+                    <i class="fas fa-download mr-1"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Behavior Report Card -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Customer Behavior</h6>
+                <button class="btn btn-sm btn-outline-secondary generate-report" data-report-type="customer">
+                    <i class="fas fa-sync-alt mr-1"></i> Refresh
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="customerReportContent" class="report-content">
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-muted">No customer report generated yet</p>
+                        <button class="btn btn-sm btn-primary generate-report" data-report-type="customer">
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+                <div class="report-loading d-none">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p class="mt-2">Generating report...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-right">
+                <button class="btn btn-sm btn-outline-secondary export-report" data-report-type="customer" disabled>
+                    <i class="fas fa-download mr-1"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Metrics Summary Card -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Report Metrics</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-left-primary h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            Sales Reports
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="salesReportCount">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-left-success h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            Inventory Reports
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="inventoryReportCount">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-left-info h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Customer Reports
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="customerReportCount">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-user-friends fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-left-warning h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            Total Reports
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalReportCount">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Date Range Modal -->
+<div class="modal fade" id="dateRangeModal" tabindex="-1" role="dialog" aria-labelledby="dateRangeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dateRangeModalLabel">Select Custom Date Range</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="dateRangeForm">
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" class="form-control" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">End Date</label>
+                        <input type="date" class="form-control" id="endDate" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="applyDateRange">Generate Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .report-content {
+            min-height: 300px;
+        }
+
+        .report-metric {
+            border-left: 4px solid #4e73df;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+
+        .report-section {
+            margin-bottom: 30px;
+        }
+
+            .report-section h5 {
+                border-bottom: 1px solid #e3e6f0;
+                padding-bottom: 8px;
+                margin-bottom: 15px;
+            }
+
+        .metric-card {
+            transition: all 0.3s;
+        }
+
+            .metric-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+}
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            const today = new Date();
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(today.getDate() - 7);
+
+            $('#startDate').val(sevenDaysAgo.toISOString().split('T')[0]);
+            $('#endDate').val(today.toISOString().split('T')[0]);
+
+            let reportCounts = {
+                sales: 0,
+                inventory: 0,
+                customer: 0
+            };
+
+            function updateMetrics() {
+                $('#salesReportCount').text(reportCounts.sales);
+                $('#inventoryReportCount').text(reportCounts.inventory);
+                $('#customerReportCount').text(reportCounts.customer);
+                $('#totalReportCount').text(reportCounts.sales + reportCounts.inventory + reportCounts.customer);
+            }
+
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+
+            function removeAsterisks(str) {
+                return str.replace(/\*\*/g, '').replace(/\*/g, '');
+            }
+
+            function formatReportText(text) {
+                return text.split('\n').map(paragraph => {
+                    const cleaned = removeAsterisks(paragraph);
+                    return cleaned ? `<p>${cleaned}</p>` : '';
+                }).join('');
+            }
+
+            function generateReport(reportType, startDate = null, endDate = null) {
+                const $card = $(`#${reportType}ReportContent`).closest('.card');
+                const $content = $card.find('.report-content');
+                const $loading = $card.find('.report-loading');
+                const $exportBtn = $card.find('.export-report');
+
+                $content.addClass('d-none');
+                $loading.removeClass('d-none');
+
+                let url = '';
+
+                switch (reportType) {
+                    case 'sales':
+                        url = '@Url.Action("GenerateSalesReport", "Test", new { area = "" })';
+                        if (startDate && endDate) {
+                            url += `?startDate=${startDate}&endDate=${endDate}`;
+                        }
+                        break;
+                    case 'inventory':
+                        url = '@Url.Action("GenerateInventoryReport", "Test", new { area = "" })';
+                        break;
+                    case 'customer':
+                        url = '@Url.Action("GenerateCustomerReport", "Test", new { area = "" })';
+                        break;
+                    default:
+                        toastr.error('Invalid report type');
+                        return;
+                }
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (response) {
+                        reportCounts[reportType]++;
+                        updateMetrics();
+
+                        renderReportContent(reportType, response);
+                        $exportBtn.prop('disabled', false);
+                        toastr.success(`${capitalizeFirstLetter(reportType)} report generated successfully`);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(error);
+                        toastr.error(`Failed to generate ${reportType} report`);
+                    },
+                    complete: function () {
+                        $loading.addClass('d-none');
+                        $content.removeClass('d-none');
+                    }
+                });
+            }
+
+            function renderReportContent(reportType, data) {
+                const $content = $(`#${reportType}ReportContent`);
+                let html = `<div class="report-header mb-4">
+                                <h4>${capitalizeFirstLetter(reportType)} Report</h4>
+                                <p class="text-muted">Generated on ${new Date().toLocaleString()}</p>
+                            </div>`;
+
+                if (reportType === 'sales') {
+                    html += renderSalesReport(data);
+                    initSalesCharts(data);
+                } else if (reportType === 'inventory') {
+                    html += renderInventoryReport(data);
+                } else if (reportType === 'customer') {
+                    html += renderCustomerReport(data);
+                }
+
+                $content.html(html);
+            }
+
+            function renderSalesReport(data) {
+                return `
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card border-left-primary py-2">
+                                <div class="card-body">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Revenue</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">$${data.metrics.totalRevenue.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-left-success py-2">
+                                <div class="card-body">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Average Order Value</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">$${data.metrics.averageOrderValue.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-left-info py-2">
+                                <div class="card-body">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Orders</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">${data.metrics.orderCount}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="report-section">
+                        <h5>Sales Trend</h5>
+                        <canvas id="salesTrendChart"></canvas>
+                    </div>
+                    <div class="report-section">
+                        <h5>Report Content</h5>
+                        <div class="report-text">${formatReportText(data.content)}</div>
+                    </div>`;
+            }
+
+            function renderInventoryReport(data) {
+                return `
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-left-primary py-2">
+                                <div class="card-body">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Inventory Value</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">$${data.inventoryMetrics.totalInventoryValue.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-left-danger py-2">
+                                <div class="card-body">
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Out of Stock Items</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">${data.inventoryMetrics.outOfStockItems}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="report-section">
+                        <h5>Inventory Status</h5>
+                        <canvas id="inventoryStatusChart"></canvas>
+                    </div>
+                    <div class="report-section">
+                        <h5>Report Content</h5>
+                        <div class="report-text">${formatReportText(data.content)}</div>
+                    </div>`;
+            }
+
+            function renderCustomerReport(data) {
+                return `
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card border-left-primary py-2">
+                                <div class="card-body">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Customers</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">${data.behaviorMetrics.totalCustomers}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-left-success py-2">
+                                <div class="card-body">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Repeat Customer Rate</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">${(data.behaviorMetrics.repeatCustomerRate * 100).toFixed(1)}%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-left-info py-2">
+                                <div class="card-body">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Avg. Rating</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">${data.behaviorMetrics.averageRating.toFixed(1)}/5</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="report-section">
+                        <h5>Customer Segmentation</h5>
+                        <canvas id="customerSegmentationChart"></canvas>
+                    </div>
+                    <div class="report-section">
+                        <h5>Report Content</h5>
+                        <div class="report-text">${formatReportText(data.content)}</div>
+                    </div>`;
+            }
+
+            function initSalesCharts(data) {
+                // Placeholder for initializing Chart.js charts
+                console.log("Initialize Chart.js with:", data);
+            }
+
+            // Event Listeners
+            $('.generate-report').click(function () {
+                const reportType = $(this).data('report-type');
+                if (reportType === 'sales') {
+                    const endDate = new Date();
+                    const startDate = new Date();
+                    startDate.setDate(endDate.getDate() - 7);
+                    generateReport(reportType, startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
+                } else {
+                    generateReport(reportType);
+                }
+            });
+
+            $('#generateAllReports').click(function () {
+                $('.generate-report').each(function () {
+                    $(this).click();
+                });
+            });
+
+            $('.date-range').click(function (e) {
+                e.preventDefault();
+                const days = $(this).data('days');
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(endDate.getDate() - days);
+
+                generateReport('sales', startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
+            });
+
+            $('.custom-range').click(function (e) {
+                e.preventDefault();
+                $('#dateRangeModal').modal('show');
+            });
+
+            $('#applyDateRange').click(function () {
+                const startDate = $('#startDate').val();
+                const endDate = $('#endDate').val();
+
+                if (!startDate || !endDate) {
+                    toastr.error('Please select both start and end dates');
+                    return;
+                }
+
+                generateReport('sales', startDate, endDate);
+                $('#dateRangeModal').modal('hide');
+            });
+        });
+    </script>
+
+    <!-- Fixed export-report logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Ensure html2pdf is available
+            if (typeof html2pdf === 'undefined') {
+                console.error('html2pdf is not loaded');
+                return;
+            }
+
+            const exportButtons = document.querySelectorAll('.export-report');
+
+            exportButtons.forEach(button => {
+                button.addEventListener('click', async function () {
+                    const reportType = button.getAttribute('data-report-type');
+                    const contentId = `${reportType}ReportContent`;
+                    const content = document.getElementById(contentId);
+
+                    if (!content || !content.innerHTML.trim()) {
+                        toastr.error('Report content is empty. Please generate the report first.');
+                        return;
+                    }
+
+                    // Create a clone of the content to avoid modifying the original
+                    const pdfContent = content.cloneNode(true);
+
+                    // Add a title if not already present
+                    const title = document.createElement('h2');
+                    title.textContent = `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`;
+                    title.style.textAlign = 'center';
+                    title.style.marginBottom = '20px';
+                    pdfContent.insertBefore(title, pdfContent.firstChild);
+
+                    // Add generation date
+                    const dateElement = document.createElement('p');
+                    dateElement.textContent = `Generated on: ${new Date().toLocaleString()}`;
+                    dateElement.style.textAlign = 'center';
+                    dateElement.style.marginBottom = '20px';
+                    pdfContent.insertBefore(dateElement, title.nextSibling);
+
+                    // Style adjustments for PDF
+                    pdfContent.style.padding = '20px';
+                    pdfContent.style.maxWidth = '800px';
+                    pdfContent.style.margin = '0 auto';
+
+                    // Create a container div for the PDF content
+                    const container = document.createElement('div');
+                    container.appendChild(pdfContent);
+
+                    // Temporarily add to body
+                    const tempDiv = document.createElement('div');
+                    tempDiv.style.position = 'absolute';
+                    tempDiv.style.left = '-9999px';
+                    tempDiv.appendChild(container);
+                    document.body.appendChild(tempDiv);
+
+                    // PDF export options
+                    const opt = {
+                        margin: 10,
+                        filename: `${reportType}-report-${new Date().toISOString().split('T')[0]}.pdf`,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: {
+                            scale: 2,
+                            logging: true,
+                            useCORS: true,
+                            allowTaint: true,
+                            scrollX: 0,
+                            scrollY: 0
+                        },
+                        jsPDF: {
+                            unit: 'mm',
+                            format: 'a4',
+                            orientation: 'portrait'
+                        },
+                        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                    };
+
+                    try {
+                        // Show loading indicator
+                        toastr.info('Preparing PDF export, please wait...');
+
+                        // Generate PDF
+                        await html2pdf().set(opt).from(container).save();
+
+                        toastr.success('Report exported successfully!');
+                    } catch (error) {
+                        console.error('PDF export error:', error);
+                        toastr.error('Failed to export report: ' + error.message);
+                    } finally {
+                        // Clean up
+                        document.body.removeChild(tempDiv);
+                    }
+                });
+            });
+        });
+    </script>
+}

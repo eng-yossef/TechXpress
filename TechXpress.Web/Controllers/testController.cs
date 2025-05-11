@@ -6,7 +6,10 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TechXpress.Data.Models;
+using TechXpress.Services.OrdersDetailsService;
+using TechXpress.Services.OrdersService;
 using TechXpress.Services.ProductsService;
+using TechXpress.Services.ReviewsService;
 using TechXpress.Web.Services.Interfaces;
 
 namespace TechXpress.Web.Controllers
@@ -17,15 +20,25 @@ namespace TechXpress.Web.Controllers
         private readonly IProductService _productService;
         private readonly IAIAssistantService _aiAssistantService;
         private readonly IAICommerceService _aiCommerceService;
+        private readonly IOrderService _orderService;
+        private readonly IOrderDetailsService _orderDetailsService;
+        private readonly IReviewService _reviewService;
+
 
         public TestController(
             IProductService productService,
             IAIAssistantService aiAssistantService,
+            IOrderService orderService,
+            IOrderDetailsService orderDetailsService,
+            IReviewService reviewService,
             IAICommerceService aiCommerceService)
         {
             _productService = productService;
             _aiAssistantService = aiAssistantService;
             _aiCommerceService = aiCommerceService;
+            _orderDetailsService = orderDetailsService;
+            _orderService = orderService;
+            _reviewService = reviewService;
         }
 
         #region AI Assistant Actions
@@ -134,5 +147,65 @@ namespace TechXpress.Web.Controllers
             return Json(userInfo);
         }
         #endregion
+
+        #region Reports
+
+        public async Task<IActionResult> GenerateSalesReport(DateTime startDate, DateTime endDate)
+        {
+            var orders = await _orderService.GetAllAsync();
+
+            var report = await _aiCommerceService.GenerateSalesPerformanceReport(orders.ToList(), startDate, endDate);
+            return Json(report);
+        }
+
+        public async Task<IActionResult> GenerateInventoryReport()
+        {
+            // Create mock product data
+            var products = await _productService.GetAllProductsWithCategoriesAsync();
+
+            var report = await _aiCommerceService.GenerateInventoryAnalysisReport(products.ToList());
+            return Json(report);
+        }
+
+        public async Task<IActionResult> GenerateCustomerReport()
+        {
+            var orders = await _orderService.GetAllAsync();
+            if (orders == null || !orders.Any())
+                return Content("No orders found to generate report");
+
+            // Extract unique customers
+            var customers = orders
+                .Where(o => o.User != null)
+                .Select(o => o.User)
+                .DistinctBy(c => c.Id)
+                .ToList();
+
+            // Extract product IDs from all order details
+            var productIds = orders
+                .SelectMany(o => o.OrderDetails ?? new List<OrderDetail>())
+                .Select(od => od.Product?.Id)
+                .Where(id => id != null)
+                .Distinct()
+                .ToList();
+
+            // Fetch full product details (with reviews)
+            var productsWithReviews = new List<ProductViewModel>();
+            foreach (var productId in productIds)
+            {
+                var product = await _productService.GetByIdAsync(productId.Value);
+                if (product != null)
+                    productsWithReviews.Add(product);
+            }
+
+            // Collect all reviews from those products
+            var reviews = productsWithReviews
+                .SelectMany(p => p.Reviews)
+                .ToList();
+
+            var report = await _aiCommerceService.GenerateCustomerBehaviorReport(customers, orders.ToList(), reviews);
+            return Json(report);
+        }
+        #endregion
+
     }
 }
