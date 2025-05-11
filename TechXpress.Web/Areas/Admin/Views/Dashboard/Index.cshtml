@@ -34,7 +34,8 @@
 
     <!-- Stats Cards Section -->
     <div class="dashboard-stats">
-        <div class="stat-card card-users">
+
+        <a asp-controller="CustomerManagement" asp-action="Index" class="stat-card card-users">
             <div class="card-icon">
                 <i class="fas fa-users"></i>
             </div>
@@ -46,13 +47,11 @@
                 </div>
             </div>
             <div class="card-action">
-                <a href="#" class="btn-action">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
+                <i class="fas fa-chevron-right"></i>
             </div>
-        </div>
+        </a>
 
-        <div class="stat-card card-products">
+        <a asp-controller="ProductsManagement" asp-action="Index" class="stat-card card-products">
             <div class="card-icon">
                 <i class="fas fa-box-open"></i>
             </div>
@@ -64,13 +63,11 @@
                 </div>
             </div>
             <div class="card-action">
-                <a href="#" class="btn-action">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
+                <i class="fas fa-chevron-right"></i>
             </div>
-        </div>
+        </a>
 
-        <div class="stat-card card-orders">
+        <a asp-controller="OrderManagement" asp-action="Index" class="stat-card card-orders">
             <div class="card-icon">
                 <i class="fas fa-shopping-cart"></i>
             </div>
@@ -82,13 +79,11 @@
                 </div>
             </div>
             <div class="card-action">
-                <a href="#" class="btn-action">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
+                <i class="fas fa-chevron-right"></i>
             </div>
-        </div>
+        </a>
 
-        <div class="stat-card card-revenue">
+        <a asp-controller="Revenue" asp-action="RevenueReport" class="stat-card card-revenue">
             <div class="card-icon">
                 <i class="fas fa-dollar-sign"></i>
             </div>
@@ -101,12 +96,12 @@
                 </div>
             </div>
             <div class="card-action">
-                <a href="#" class="btn-action">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
+                <i class="fas fa-chevron-right"></i>
             </div>
-        </div>
+        </a>
+
     </div>
+
 
     <!-- Charts Section -->
     <div class="dashboard-charts">
@@ -467,6 +462,9 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2.5rem;
+        }
+        .dashboard-stats a{
+				text-decoration: none;
         }
 
         .stat-card {

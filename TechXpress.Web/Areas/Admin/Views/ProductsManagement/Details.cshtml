@@ -62,7 +62,7 @@
                             </tr>
                             <tr>
                                 <th>Category</th>
-                                <td>@Model.Category?.Name ?? "N/A"</td>
+                                <td>@((Model.Category?.Name)??"N/A")</td>
                             </tr>
                         </tbody>
                     </table>
