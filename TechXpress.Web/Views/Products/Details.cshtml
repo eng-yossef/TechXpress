@@ -574,20 +574,20 @@
                                 <input type="hidden" name="UserId" value="@User.FindFirstValue(ClaimTypes.NameIdentifier)" />
 
                                 <div class="mb-3">
-                                    <label for="Rating" class="form-label">Rating</label>
+                                    <label class="form-label">Rating</label>
                                     <div class="rating-input">
-                                        @for (int i = 1; i <= 5; i++)
-                                        {
-                                            <input type="radio" asp-for="@Model.NewReview.Rating" value="@i" id="rating-@i" name="Rating" />
-                                            <label for="rating-@i" class="star-rating">
-                                                <i class="far fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                            </label>
-                                        }
+                                        <div class="rating-stars">
+                                            @for (int i = 5; i >= 1; i--)
+                                            {
+                                                <input type="radio" id="star-@i" name="Rating" value="@i" @(Model.NewReview.Rating == i ? "checked" : "") />
+                                                <label for="star-@i" title="@i stars">
+                                                    <i class="fas fa-star"></i>
+                                                </label>
+                                            }
+                                        </div>
                                     </div>
                                     <span class="text-danger" asp-validation-for="@Model.NewReview.Rating"></span>
                                 </div>
-
 
                                 <div class="mb-3">
                                     <label for="Comment" class="form-label">Comment</label>
@@ -1151,6 +1151,48 @@
                 form.submit();
             });
         });
+
+
+                    document.addEventListener("DOMContentLoaded", function() {
+                // Star rating interaction
+                const stars = document.querySelectorAll('.rating-input input[type="radio"]');
+
+                stars.forEach(star => {
+                    star.addEventListener('change', function() {
+                        const rating = this.value;
+                        // You can add any additional logic here if needed
+                        console.log('Selected rating:', rating);
+                    });
+
+                    star.addEventListener('mouseover', function() {
+                        const hoverValue = this.value;
+                        const labels = document.querySelectorAll('.rating-input label');
+
+                        labels.forEach((label, index) => {
+                            if (index >= 5 - hoverValue) {
+                                label.style.color = '#ffc107';
+                            }
+                        });
+                    });
+
+                    star.addEventListener('mouseout', function() {
+                        const checkedStar = document.querySelector('.rating-input input[type="radio"]:checked');
+                        const labels = document.querySelectorAll('.rating-input label');
+
+                        labels.forEach(label => {
+                            label.style.color = '#ddd';
+                        });
+
+                        if (checkedStar) {
+                            const checkedValue = checkedStar.value;
+                            labels.forEach((label, index) => {
+                                if (index >= 5 - checkedValue) {
+                                    label.style.color = '#ffc107';
+                                }
+                            });
+                        }
+                    });
+                });
     </script>
 
     <!-- Include validation scripts -->

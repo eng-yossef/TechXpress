@@ -1,41 +1,81 @@
 ﻿@using TechXpress.Data.Models
+@using TechXpress.Web.Extensions
 @model IEnumerable<Order>
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     ViewData["Title"] = "Order List";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var statuses = typeof(OrderStatus).GetEnumSelectList();
 }
 
 <h1 class="my-4">Order List</h1>
 
+<!-- Filter Controls -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label for="statusFilter" class="form-label">Filter by Status</label>
+                <select class="form-select" id="statusFilter">
+                    <option value="">All Statuses</option>
+                    @foreach (var status in statuses)
+                    {
+                        <option value="@status.Key">@status.Value</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="searchInput" class="form-label">Search Order #</label>
+                <input type="text" class="form-control" id="searchInput" placeholder="Enter order number...">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button id="resetFilters" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-times me-2"></i>Reset Filters
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @if (Model != null && Model.Any())
 {
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Order ID</th>
-                <th>Status</th>
-                <th>Total</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var order in Model)
-            {
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped" id="ordersTable">
+            <thead class="table-dark">
                 <tr>
-                    <td>@order.Id</td>
-                    <td>@order.OrderStatus</td>
-                    <td>@order.TotalAmount.ToString("C")</td>
-                    <td>@order.OrderDate.ToString("g")</td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-primary">Details</a>
-                    </td>
+                    <th>Order ID</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Date</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr data-status="@order.OrderStatus.ToString()" data-order-id="@order.Id">
+                        <td>@order.Id</td>
+                        <td>
+                            <span class="badge @order.OrderStatus.GetStatusBadgeClass() py-1 px-2" style="color:black;">
+                                @order.OrderStatus
+                            </span>
+                        </td>
+                        <td>@order.TotalAmount.ToString("C")</td>
+                        <td>@order.OrderDate.ToString("g")</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-primary">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- No results row (hidden by default) -->
+    <div id="noResults" class="alert alert-info" style="display: none;">
+        No orders match your filters.
+    </div>
 }
 else
 {
@@ -58,6 +98,62 @@ else
 @section Scripts {
     <script>
         $(document).ready(function () {
+            // Add no results row if there are orders
+        @if (Model != null && Model.Any())
+        {
+            <text>
+                    $('#ordersTable tbody').append(
+                        '<tr id="noResultsRow" style="display: none;">' +
+                        '<td colspan="5" class="text-center py-3">' +
+                        'No orders match your filters' +
+                        '</td>' +
+                        '</tr>'
+                    );
+            </text>
+        }
+
+            // Filter function
+            function filterOrders() {
+                const statusFilter = $('#statusFilter').val().toLowerCase();
+                const searchTerm = $('#searchInput').val().toLowerCase();
+                let hasResults = false;
+
+                $('#ordersTable tbody tr').each(function() {
+                    if ($(this).attr('id') === 'noResultsRow') return;
+
+                    const orderStatus = $(this).data('status').toLowerCase();
+                    const orderId = $(this).data('order-id').toString();
+
+                    const statusMatch = statusFilter === '' || orderStatus === statusFilter.toLowerCase();
+                    const searchMatch = searchTerm === '' || orderId.includes(searchTerm);
+
+                    if (statusMatch && searchMatch) {
+                        $(this).show();
+                        hasResults = true;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                // Show/hide no results message
+                if (!hasResults) {
+                    $('#noResultsRow').show();
+                    $('#noResults').show();
+                } else {
+                    $('#noResultsRow').hide();
+                    $('#noResults').hide();
+                }
+            }
+
+            // Event listeners for filters
+            $('#statusFilter, #searchInput').on('change keyup', filterOrders);
+
+            $('#resetFilters').click(function() {
+                $('#statusFilter').val('');
+                $('#searchInput').val('');
+                filterOrders();
+            });
+
             // Handle the "Get Stats" button click
             $("#getStatsBtn").click(function () {
                 $.ajax({
@@ -66,13 +162,13 @@ else
                     success: function (response) {
                         if (response) {
                             // Format and show total sales
-                                            const statsVisible = $('#statsSection').is(':visible');
+                            const statsVisible = $('#statsSection').is(':visible');
 
                             $('#totalSales').text(`$${parseFloat(response.totalSales).toFixed(2)}`);
-                             if (statsVisible) {
-                    $('#statsSection').slideUp(); // Hide if already shown
-                    return;
-                }
+                            if (statsVisible) {
+                                $('#statsSection').slideUp(); // Hide if already shown
+                                return;
+                            }
 
                             // Clear existing order counts
                             $('#orderCounts').empty();
@@ -88,8 +184,7 @@ else
                                 `);
                             }
 
-                                                       $('#statsSection').slideDown(); // Show with animation
-
+                            $('#statsSection').slideDown(); // Show with animation
                         }
                     },
                     error: function () {
@@ -97,6 +192,9 @@ else
                     }
                 });
             });
+
+            // Initial filter in case page loads with values
+            filterOrders();
         });
     </script>
 }

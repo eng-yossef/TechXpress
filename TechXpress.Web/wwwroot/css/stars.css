@@ -1,4 +1,4 @@
-﻿.rating-input {
+﻿/*.rating-input {
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
@@ -40,3 +40,39 @@
     .star-rating .fas {
         display: inline;
     }
+*/
+
+.rating-input {
+    direction: rtl; /* Right to left for proper star highlighting */
+    unicode-bidi: bidi-override;
+    display: inline-block;
+}
+
+.rating-stars {
+    display: flex;
+    flex-direction: row-reverse; /* Display stars in reverse order but highlight correctly */
+    justify-content: flex-end;
+}
+
+.rating-input input[type="radio"] {
+    display: none;
+}
+
+.rating-input label {
+    color: #ddd;
+    font-size: 1.5rem;
+    padding: 0 3px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+    .rating-input input[type="radio"]:checked ~ label,
+    .rating-input input[type="radio"]:hover ~ label,
+    .rating-input label:hover,
+    .rating-input label:hover ~ label {
+        color: #ffc107;
+    }
+
+.rating-input input[type="radio"]:checked + label {
+    color: #ffc107;
+}

@@ -31,6 +31,13 @@ namespace TechXpress.Web.Areas.Admin.Controllers
         public async Task<IActionResult> Index()
         {
             var products = await _productService.GetAllProductsWithCategoriesAsync();
+
+            // Fetch categories
+            var categories = await _categoryService.GetAllAsync();
+
+            // Add categories to ViewBag
+            ViewBag.Categories = categories;
+
             return View(products);
         }
 

@@ -1,54 +1,189 @@
 ﻿@using TechXpress.Data.Models
+@using TechXpress.Web.Extensions
 @model IEnumerable<TechXpress.Data.Models.Payment>
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     ViewData["Title"] = "Payment Management";
-	Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var paymentStatuses = typeof(PaymentStatus).GetEnumSelectList();
 }
 
-<h2>Payment List</h2>
+<h2 class="mb-4">Payment Management</h2>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Order ID</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Transaction ID</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var payment in Model)
-        {
+<!-- Filter Controls -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label for="statusFilter" class="form-label">Payment Status</label>
+                <select class="form-select" id="statusFilter">
+                    <option value="">All Statuses</option>
+                    @foreach (var status in paymentStatuses)
+                    {
+                        <option value="@status.Key">@status.Value</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="minAmountFilter" class="form-label">Min Amount</label>
+                <input type="number" class="form-control" id="minAmountFilter" placeholder="Minimum amount">
+            </div>
+            <div class="col-md-3">
+                <label for="maxAmountFilter" class="form-label">Max Amount</label>
+                <input type="number" class="form-control" id="maxAmountFilter" placeholder="Maximum amount">
+            </div>
+            <div class="col-md-3">
+                <label for="searchFilter" class="form-label"> Order/Transaction ID</label>
+                <input type="text" class="form-control" id="searchFilter" placeholder="Search...">
+            </div>
+            <div class="col-md-12 d-flex justify-content-end">
+                <button id="resetFilters" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-times me-2"></i>Reset Filters
+                </button>
+                <button id="applyFilters" class="btn btn-primary">
+                    <i class="fas fa-filter me-2"></i>Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped" id="paymentsTable">
+        <thead class="table-dark">
             <tr>
-                <td>@payment.Id</td>
-                <td>@payment.OrderId</td>
-                <td>@payment.Amount.ToString("C")</td>
-                <td>@payment.Status</td>
-                <td>@payment.TransactionId</td>
-                <td>
-                    <a asp-action="Details" asp-route-paymentId="@payment.Id" class="btn btn-sm btn-info">Details</a>
-
-                    @if (payment.Status == PaymentStatus.Pending)
-                    {
-                        <a asp-action="ProcessPayment" asp-route-paymentId="@payment.Id" class="btn btn-sm btn-success">Process</a>
-                    }
-
-                    @if (payment.Status == PaymentStatus.Completed)
-                    {
-                        <form asp-action="RefundPayment" asp-route-paymentId="@payment.Id" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Are you sure you want to refund this payment?');">Refund</button>
-                        </form>
-                    }
-
-                    <form asp-action="MarkAsFailed" asp-route-paymentId="@payment.Id" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Mark as failed?');">Mark Failed</button>
-                    </form>
-                </td>
+                <th>ID</th>
+                <th>Order ID</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Transaction ID</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var payment in Model)
+            {
+                <tr data-status="@payment.Status.ToString()"
+                    data-amount="@payment.Amount"
+                    data-order-id="@payment.OrderId"
+                    data-transaction-id="@payment.TransactionId">
+                    <td>@payment.Id</td>
+                    <td>@payment.OrderId</td>
+                    <td>@payment.Amount.ToString("C")</td>
+                    <td>
+                        <span class="badge @payment.Status.GetPaymentStatusBadgeClass() py-1 px-2">
+                            @payment.Status.GetDisplayName()
+                        </span>
+                    </td>
+                    <td>@payment.TransactionId</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a asp-action="Details" asp-route-paymentId="@payment.Id" class="btn btn-sm btn-info">Details</a>
+
+                            @if (payment.Status == PaymentStatus.Pending)
+                            {
+                                <a asp-action="ProcessPayment" asp-route-paymentId="@payment.Id" class="btn btn-sm btn-success">Process</a>
+                            }
+
+                            @if (payment.Status == PaymentStatus.Completed)
+                            {
+                                <form asp-action="RefundPayment" asp-route-paymentId="@payment.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Are you sure you want to refund this payment?');">Refund</button>
+                                </form>
+                            }
+
+                            <form asp-action="MarkAsFailed" asp-route-paymentId="@payment.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Mark as failed?');">Mark Failed</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- No results message -->
+<div id="noResults" class="alert alert-info mt-3" style="display: none;">
+    No payments match your current filters.
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add no results row
+            $('#paymentsTable tbody').append(
+                '<tr id="noResultsRow" style="display: none;">' +
+                '<td colspan="6" class="text-center py-4">' +
+                '<i class="fas fa-search fa-lg text-muted mb-2"></i>' +
+                '<p class="mb-0">No payments found matching your criteria</p>' +
+                '</td>' +
+                '</tr>'
+            );
+
+            // Filter function
+            function filterPayments() {
+                const statusFilter = $('#statusFilter').val().toLowerCase();
+                const minAmount = parseFloat($('#minAmountFilter').val()) || 0;
+                const maxAmount = parseFloat($('#maxAmountFilter').val()) || Infinity;
+                const searchTerm = $('#searchFilter').val().toLowerCase();
+
+                let hasResults = false;
+
+                $('#paymentsTable tbody tr').each(function() {
+                    if ($(this).attr('id') === 'noResultsRow') return;
+
+                    const status = $(this).data('status').toLowerCase();
+                    const amount = parseFloat($(this).data('amount'));
+                    const orderId = $(this).data('order-id').toString();
+                    const transactionId = $(this).data('transaction-id')?.toString().toLowerCase() || '';
+
+                    const statusMatch = statusFilter === '' || status === statusFilter.toLowerCase();
+                    const amountMatch = amount >= minAmount && amount <= maxAmount;
+                    const searchMatch = searchTerm === '' ||
+                                      orderId.includes(searchTerm) ||
+                                      transactionId.includes(searchTerm);
+
+                    if (statusMatch && amountMatch && searchMatch) {
+                        $(this).show();
+                        hasResults = true;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                // Show/hide no results message
+                if (hasResults) {
+                    $('#noResults').hide();
+                    $('#noResultsRow').hide();
+                } else {
+                    $('#noResults').show();
+                    $('#noResultsRow').show();
+                }
+            }
+
+            // Event listeners
+            $('#applyFilters').click(filterPayments);
+            $('#resetFilters').click(function() {
+                $('#statusFilter').val('');
+                $('#minAmountFilter').val('');
+                $('#maxAmountFilter').val('');
+                $('#searchFilter').val('');
+                filterPayments();
+            });
+
+            // Filter when Enter is pressed in search
+            $('#searchFilter').keypress(function(e) {
+                if (e.which === 13) {
+                    filterPayments();
+                }
+            });
+
+            // Initial filter check if any filters are set
+            if ($('#statusFilter').val() || $('#minAmountFilter').val() || $('#maxAmountFilter').val() || $('#searchFilter').val()) {
+                filterPayments();
+            }
+        });
+    </script>
+}
