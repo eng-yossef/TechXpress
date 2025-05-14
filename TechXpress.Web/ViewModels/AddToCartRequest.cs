@@ -43,7 +43,7 @@ namespace TechXpress.Web.ViewModels
         public CartViewModel? Cart { get; set; }
         public AddressViewModel ShippingAddress { get; set; }
         public AddressViewModel BillingAddress { get; set; }
-        public string PaymentMethod { get; set; }
+        public PaymentMethod PaymentMethod { get; set; }  // Changed from string to enum
         public bool SameAsShipping { get; set; } = true;
     }
 

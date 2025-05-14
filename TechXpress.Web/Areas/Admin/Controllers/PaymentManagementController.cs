@@ -90,6 +90,42 @@ namespace TechXpress.Web.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index)); // Redirect to the payment list
         }
 
+
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStatus(int paymentId, PaymentStatus newStatus)
+        {
+            var payment = await _paymentService.GetByIdAsync(paymentId);
+            if (payment == null)
+            {
+                return NotFound();
+            }
+
+            // Optional: prevent illegal transitions
+            if (payment.Status == PaymentStatus.Completed && newStatus == PaymentStatus.Pending)
+            {
+                ModelState.AddModelError("", "Cannot revert a completed payment to pending.");
+                return BadRequest("Invalid status change.");
+            }
+
+            payment.Status = newStatus;
+            await _paymentService.UpdateAsync(payment);
+
+            _logger.LogInformation($"Admin manually changed status of Payment {payment.Id} to {newStatus}");
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
+
+
+
+
+
         // POST: Admin/PaymentManagement/Refund/{paymentId}
         [HttpPost]
         [ValidateAntiForgeryToken]

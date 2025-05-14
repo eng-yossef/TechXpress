@@ -34,7 +34,7 @@
                 <input type="number" class="form-control" id="maxAmountFilter" placeholder="Maximum amount">
             </div>
             <div class="col-md-3">
-                <label for="searchFilter" class="form-label"> Order/Transaction ID</label>
+                <label for="searchFilter" class="form-label">Order/Transaction ID</label>
                 <input type="text" class="form-control" id="searchFilter" placeholder="Search...">
             </div>
             <div class="col-md-12 d-flex justify-content-end">
@@ -49,6 +49,7 @@
     </div>
 </div>
 
+<!-- Payments Table -->
 <div class="table-responsive">
     <table class="table table-bordered table-striped" id="paymentsTable">
         <thead class="table-dark">
@@ -78,41 +79,54 @@
                     </td>
                     <td>@payment.TransactionId</td>
                     <td>
-                        <div class="d-flex gap-2">
-                            <a asp-action="Details" asp-route-paymentId="@payment.Id" class="btn btn-sm btn-info">Details</a>
+                        <div class="d-flex align-items-center gap-2">
+                            <!-- Compact Details Icon -->
+                            <a asp-action="Details" asp-route-paymentId="@payment.Id"
+                               class="btn btn-link p-0" style="font-size: 1.2rem; color: #17a2b8;">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
 
-                            @if (payment.Status == PaymentStatus.Pending)
-                            {
-                                <a asp-action="ProcessPayment" asp-route-paymentId="@payment.Id" class="btn btn-sm btn-success">Process</a>
-                            }
+                            <!-- Update Status Dropdown + Icon -->
+                            <form asp-action="UpdateStatus" asp-route-paymentId="@payment.Id" method="post"
+                                  class="d-flex align-items-center gap-2">
+                                <select name="newStatus"
+                                        class="form-select form-select-sm w-auto"
+                                        style="max-width: 165px; font-size: 0.85rem;" required>
+                                    @foreach (var status in Enum.GetValues(typeof(PaymentStatus)))
+                                    {
+                                        var isSelected = status.Equals(payment.Status);
+                                        <option value="@status" selected="@(isSelected)">
+                                            @status.ToString()
+                                        </option>
+                                    }
+                                </select>
 
-                            @if (payment.Status == PaymentStatus.Completed)
-                            {
-                                <form asp-action="RefundPayment" asp-route-paymentId="@payment.Id" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Are you sure you want to refund this payment?');">Refund</button>
-                                </form>
-                            }
-
-                            <form asp-action="MarkAsFailed" asp-route-paymentId="@payment.Id" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Mark as failed?');">Mark Failed</button>
+                                <!-- Submit Icon Button -->
+                                <button type="submit" class="btn btn-link p-0" style="font-size: 1.2rem; color: #007bff;">
+                                    <i class="fas fa-check"></i>
+                                </button>
                             </form>
                         </div>
                     </td>
+
+
+
                 </tr>
             }
         </tbody>
     </table>
 </div>
 
-<!-- No results message -->
+<!-- No Results Message -->
 <div id="noResults" class="alert alert-info mt-3" style="display: none;">
     No payments match your current filters.
 </div>
 
+<!-- Scripts -->
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            // Add no results row
+        $(document).ready(function () {
+            // Add "No Results" row
             $('#paymentsTable tbody').append(
                 '<tr id="noResultsRow" style="display: none;">' +
                 '<td colspan="6" class="text-center py-4">' +
@@ -122,7 +136,6 @@
                 '</tr>'
             );
 
-            // Filter function
             function filterPayments() {
                 const statusFilter = $('#statusFilter').val().toLowerCase();
                 const minAmount = parseFloat($('#minAmountFilter').val()) || 0;
@@ -131,7 +144,7 @@
 
                 let hasResults = false;
 
-                $('#paymentsTable tbody tr').each(function() {
+                $('#paymentsTable tbody tr').each(function () {
                     if ($(this).attr('id') === 'noResultsRow') return;
 
                     const status = $(this).data('status').toLowerCase();
@@ -139,11 +152,9 @@
                     const orderId = $(this).data('order-id').toString();
                     const transactionId = $(this).data('transaction-id')?.toString().toLowerCase() || '';
 
-                    const statusMatch = statusFilter === '' || status === statusFilter.toLowerCase();
+                    const statusMatch = !statusFilter || status === statusFilter;
                     const amountMatch = amount >= minAmount && amount <= maxAmount;
-                    const searchMatch = searchTerm === '' ||
-                                      orderId.includes(searchTerm) ||
-                                      transactionId.includes(searchTerm);
+                    const searchMatch = !searchTerm || orderId.includes(searchTerm) || transactionId.includes(searchTerm);
 
                     if (statusMatch && amountMatch && searchMatch) {
                         $(this).show();
@@ -153,34 +164,22 @@
                     }
                 });
 
-                // Show/hide no results message
-                if (hasResults) {
-                    $('#noResults').hide();
-                    $('#noResultsRow').hide();
-                } else {
-                    $('#noResults').show();
-                    $('#noResultsRow').show();
-                }
+                $('#noResults').toggle(!hasResults);
+                $('#noResultsRow').toggle(!hasResults);
             }
 
-            // Event listeners
+            // Event Handlers
             $('#applyFilters').click(filterPayments);
-            $('#resetFilters').click(function() {
-                $('#statusFilter').val('');
-                $('#minAmountFilter').val('');
-                $('#maxAmountFilter').val('');
-                $('#searchFilter').val('');
+            $('#resetFilters').click(function () {
+                $('#statusFilter, #minAmountFilter, #maxAmountFilter, #searchFilter').val('');
                 filterPayments();
             });
 
-            // Filter when Enter is pressed in search
-            $('#searchFilter').keypress(function(e) {
-                if (e.which === 13) {
-                    filterPayments();
-                }
+            $('#searchFilter').keypress(function (e) {
+                if (e.which === 13) filterPayments();
             });
 
-            // Initial filter check if any filters are set
+            // Auto-apply filters if pre-filled
             if ($('#statusFilter').val() || $('#minAmountFilter').val() || $('#maxAmountFilter').val() || $('#searchFilter').val()) {
                 filterPayments();
             }

@@ -394,7 +394,7 @@ namespace TechXpress.Web.Controllers
                     ShippingAddress = shippingAddress,
                     BillingAddress = new AddressViewModel(),
                     
-                    PaymentMethod = "CreditCard"
+                    PaymentMethod = PaymentMethod.CreditCard, // Default payment method
                 };
 
                 checkoutViewModel.Cart.Total = checkoutViewModel.Cart.Subtotal +
@@ -410,6 +410,7 @@ namespace TechXpress.Web.Controllers
                 return RedirectToAction("Index");
             }
         }
+
 
         [Authorize]
         [HttpPost("checkout")]
@@ -436,7 +437,6 @@ namespace TechXpress.Web.Controllers
 
             if (!ModelState.IsValid)
             {
-                // return checkout view with error
                 model.Cart = new CartViewModel
                 {
                     CartId = cart.Id.ToString(),
@@ -460,7 +460,7 @@ namespace TechXpress.Web.Controllers
                 return View("Checkout", model);
             }
 
-            // Create order (but DO NOT decrease stock or set payment status)
+            // Step 1: Create the Order
             var order = new Order
             {
                 UserId = userId,
@@ -469,11 +469,11 @@ namespace TechXpress.Web.Controllers
                 OrderStatus = OrderStatus.Pending,
                 OrderDate = DateTime.UtcNow,
                 TotalAmount = totalAmount,
-                User=null
+                User = null
             };
             await _orderService.AddOrderAsync(order);
 
-            // Create order details
+            // Step 2: Create the OrderDetails
             var orderDetails = cart.Items.Select(item => new OrderDetail
             {
                 OrderId = order.Id,
@@ -483,10 +483,37 @@ namespace TechXpress.Web.Controllers
             });
             await _orderDetailsService.AddRangeAsync(orderDetails);
 
-            await _unitOfWork.CompleteAsync();
-            return RedirectToAction("Index", "Payment", new { Id = order.Id});
+            // Step 3: Check payment method
+            if (model.PaymentMethod == PaymentMethod.CashOnDelivery)
+            {
+                var payment = new Payment
+                {
+                    OrderId = order.Id,
+                    UserId = userId,
+                    Amount = totalAmount,
+                    Method = PaymentMethod.CashOnDelivery,
+                    Status = PaymentStatus.Pending, // COD is Pending until manually confirmed
+                    TransactionId = $"COD-{Guid.NewGuid()}",
+                    Notes = "Cash on Delivery selected.",
+                    PaymentDate = DateTime.UtcNow
+                };
+                await _unitOfWork.Payments.AddAsync(payment);
 
+                await _unitOfWork.CompleteAsync();
+
+                // Optionally clear cart
+                await _cartService.ClearCartAsync(cart.Id);
+
+                TempData["SuccessMessage"] = "Your order was placed successfully with Cash on Delivery.";
+                return RedirectToAction("Index", "Orders");
+            }
+
+            await _unitOfWork.CompleteAsync();
+
+            // Step 4: For other methods (e.g., Stripe), redirect to Payment
+            return RedirectToAction("Index", "Payment", new { Id = order.Id });
         }
+
 
         // ---------------------------- Merge Guest Cart on Login ----------------------------
 

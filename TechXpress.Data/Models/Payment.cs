@@ -63,20 +63,20 @@ namespace TechXpress.Data.Models
         [Display(Name = "Credit Card")]
         CreditCard = 0,
 
-        [Display(Name = "PayPal")]
-        PayPal = 1,
+        //[Display(Name = "PayPal")]
+        //PayPal = 1,
 
-        [Display(Name = "Bank Transfer")]
-        BankTransfer = 2,
+        //[Display(Name = "Bank Transfer")]
+        //BankTransfer = 2,
 
         [Display(Name = "Cash on Delivery")]
         CashOnDelivery = 3,
 
-        [Display(Name = "Mobile Money")]
-        MobileMoney = 4,
+        //[Display(Name = "Mobile Money")]
+        //MobileMoney = 4,
 
-        [Display(Name = "Cryptocurrency")]
-        Cryptocurrency = 5
+        //[Display(Name = "Cryptocurrency")]
+        //Cryptocurrency = 5
     }
 
     public enum PaymentStatus
