@@ -460,61 +460,94 @@ namespace TechXpress.Web.Controllers
                 return View("Checkout", model);
             }
 
-            // Step 1: Create the Order
-            var order = new Order
-            {
-                UserId = userId,
-                ShippingAddress = model.ShippingAddress,
-                PaymentStatus = PaymentStatus.Pending,
-                OrderStatus = OrderStatus.Pending,
-                OrderDate = DateTime.UtcNow,
-                TotalAmount = totalAmount,
-                User = null
-            };
-            await _orderService.AddOrderAsync(order);
+            // Start a transaction
+            var context = _productService.GetDbContext();
 
-            // Step 2: Create the OrderDetails
-            var orderDetails = cart.Items.Select(item => new OrderDetail
-            {
-                OrderId = order.Id,
-                ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                Price = item.Product?.Price ?? 0m
-            });
-            await _orderDetailsService.AddRangeAsync(orderDetails);
+            // Start a transaction
+            using var transaction = await context.Database.BeginTransactionAsync();
 
-            // Step 3: Check payment method
-            if (model.PaymentMethod == PaymentMethod.CashOnDelivery)
+            try
             {
-                var payment = new Payment
+                // Step 1: Create the Order
+                var order = new Order
+                {
+                    UserId = userId,
+                    ShippingAddress = model.ShippingAddress,
+                    PaymentStatus = PaymentStatus.Pending,
+                    OrderStatus = OrderStatus.Pending,
+                    OrderDate = DateTime.UtcNow,
+                    TotalAmount = totalAmount,
+                    User = null
+                };
+                await _orderService.AddOrderAsync(order);
+
+                // Step 2: Create the OrderDetails
+                var orderDetails = cart.Items.Select(item => new OrderDetail
                 {
                     OrderId = order.Id,
-                    UserId = userId,
-                    Amount = totalAmount,
-                    Method = PaymentMethod.CashOnDelivery,
-                    Status = PaymentStatus.Pending, // COD is Pending until manually confirmed
-                    TransactionId = $"COD-{Guid.NewGuid()}",
-                    Notes = "Cash on Delivery selected.",
-                    PaymentDate = DateTime.UtcNow
-                };
-                await _unitOfWork.Payments.AddAsync(payment);
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    Price = item.Product?.Price ?? 0m
+                }).ToList();
+                await _orderDetailsService.AddRangeAsync(orderDetails);
 
+                // Step 3: Check payment method
+                if (model.PaymentMethod == PaymentMethod.CashOnDelivery)
+                {
+                    // Reduce product quantities before creating payment
+                    foreach (var item in orderDetails)
+                    {
+                        var product = await _productService.GetByIdAsync(item.ProductId);
+                        if (product != null && product.StockQuantity >= item.Quantity)
+                        {
+                            product.StockQuantity -= item.Quantity;
+                            await _productService.UpdateAsync(product);
+                        }
+                        else
+                        {
+                            await transaction.RollbackAsync();
+                            TempData["ErrorMessage"] = $"Not enough stock for product {product?.Name ?? "Unknown"}.";
+                            return RedirectToAction("Checkout", "Cart");
+                        }
+                    }
+
+                    var payment = new Payment
+                    {
+                        OrderId = order.Id,
+                        UserId = userId,
+                        Amount = totalAmount,
+                        Method = PaymentMethod.CashOnDelivery,
+                        Status = PaymentStatus.Pending, // COD is Pending until manually confirmed
+                        TransactionId = $"COD-{Guid.NewGuid()}",
+                        Notes = "Cash on Delivery selected.",
+                        PaymentDate = DateTime.UtcNow
+                    };
+                    await _unitOfWork.Payments.AddAsync(payment);
+
+                    // Clear cart only after successful operations
+                    await _cartService.ClearCartAsync(cart.Id);
+
+                    await _unitOfWork.CompleteAsync();
+                    await transaction.CommitAsync();
+
+                    TempData["SuccessMessage"] = "Your order was placed successfully with Cash on Delivery.";
+                    return RedirectToAction("Index", "Orders");
+                }
+
+                // For other payment methods (e.g., Stripe)
                 await _unitOfWork.CompleteAsync();
+                await transaction.CommitAsync();
 
-                // Optionally clear cart
-                await _cartService.ClearCartAsync(cart.Id);
-
-                TempData["SuccessMessage"] = "Your order was placed successfully with Cash on Delivery.";
-                return RedirectToAction("Index", "Orders");
+                return RedirectToAction("Index", "Payment", new { Id = order.Id });
             }
-
-            await _unitOfWork.CompleteAsync();
-
-            // Step 4: For other methods (e.g., Stripe), redirect to Payment
-            return RedirectToAction("Index", "Payment", new { Id = order.Id });
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                //_logger.LogError(ex, "Transaction failed during checkout processing.");
+                TempData["ErrorMessage"] = "An error occurred while processing your order.";
+                return RedirectToAction("Checkout", "Cart");
+            }
         }
-
-
         // ---------------------------- Merge Guest Cart on Login ----------------------------
 
         [Authorize]

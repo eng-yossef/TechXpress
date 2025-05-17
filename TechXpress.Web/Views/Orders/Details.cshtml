@@ -105,6 +105,7 @@
             </div>
 
             <!-- Order Timeline -->
+            <!-- Order Timeline -->
             <div class="card shadow-sm border-0 mt-4">
                 <div class="card-header bg-white border-0 py-3">
                     <h5 class="mb-0">
@@ -113,51 +114,183 @@
                 </div>
                 <div class="card-body">
                     <div class="timeline">
+                        <!-- Order Placed - Always shown -->
                         <div class="timeline-item">
                             <div class="timeline-content p-3 rounded-3 bg-light">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="fw-bold">Order Placed</span>
                                     <small class="text-muted">@Model.OrderDate.ToString("MMMM dd, yyyy h:mm tt")</small>
                                 </div>
-                                <p class="mb-0">Your order has been received and is being processed.</p>
+                                <p class="mb-0">Your order has been received.</p>
+                                @if (Model.Payments?.Any() == true)
+                                {
+                                    <p class="mb-0 mt-2">
+                                        Payment Method: <strong>@Model.Payments.First().Method</strong>
+                                        @if (Model.Payments.First().Status == PaymentStatus.Completed)
+                                        {
+                                            <span class="badge bg-success ms-2">Paid</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning ms-2">@Model.Payments.First().Status</span>
+                                        }
+                                    </p>
+                                }
                             </div>
                         </div>
 
-                        @if (Model.OrderStatus == OrderStatus.Processing)
+                        <!-- Processing - Show if status is Processing or beyond -->
+                        @if (Model.OrderStatus >= OrderStatus.Processing)
                         {
                             <div class="timeline-item">
                                 <div class="timeline-content p-3 rounded-3 bg-light">
                                     <div class="d-flex justify-content-between mb-2">
                                         <span class="fw-bold">Processing</span>
-                                        <small class="text-muted">@DateTime.Now.ToString("MMMM dd, yyyy h:mm tt")</small>
+                                        <small class="text-muted">
+                                            @(Model.LastUpdated?.ToString("MMMM dd, yyyy h:mm tt") ?? Model.OrderDate.AddHours(1).ToString("MMMM dd, yyyy h:mm tt"))
+                                        </small>
                                     </div>
                                     <p class="mb-0">We're preparing your order for shipment.</p>
+                                    @if (Model.OrderDetails?.Any() == true)
+                                    {
+                                        <p class="mb-0 mt-2">
+                                            <strong>@Model.OrderDetails.Sum(od => od.Quantity)</strong> items being prepared
+                                        </p>
+                                    }
                                 </div>
                             </div>
                         }
 
+                        <!-- Shipped - Show if status is Shipped or beyond -->
+                        @if (Model.OrderStatus >= OrderStatus.Shipped)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-content p-3 rounded-3 bg-light">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="fw-bold">Shipped</span>
+                                        <small class="text-muted">
+                                            @(Model.LastUpdated?.ToString("MMMM dd, yyyy h:mm tt") ?? Model.OrderDate.AddDays(1).ToString("MMMM dd, yyyy h:mm tt"))
+                                        </small>
+                                    </div>
+                                    <p class="mb-0">Your order is on its way.</p>
+                                    @if (Model.ShippingAddress != null)
+                                    {
+                                        <p class="mb-0 mt-2">
+                                            Shipping to:
+                                            <strong>
+                                                @Model.ShippingAddress.AddressLine1,
+                                                @Model.ShippingAddress.City,
+                                                @Model.ShippingAddress.ZipCode
+                                            </strong>
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Delivered - Show if status is Delivered -->
                         @if (Model.OrderStatus == OrderStatus.Delivered)
                         {
                             <div class="timeline-item">
                                 <div class="timeline-content p-3 rounded-3 bg-light">
                                     <div class="d-flex justify-content-between mb-2">
-                                        <span class="fw-bold">Completed</span>
-                                        <small class="text-muted">@DateTime.Now.ToString("MMMM dd, yyyy h:mm tt")</small>
+                                        <span class="fw-bold">Delivered</span>
+                                        <small class="text-muted">
+                                            @(Model.LastUpdated?.ToString("MMMM dd, yyyy h:mm tt") ?? DateTime.Now.ToString("MMMM dd, yyyy h:mm tt"))
+                                        </small>
                                     </div>
                                     <p class="mb-0">Your order has been successfully delivered.</p>
                                 </div>
                             </div>
                         }
 
+                        <!-- On Hold -->
+                        @if (Model.OrderStatus == OrderStatus.OnHold)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-content p-3 rounded-3 bg-light">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="fw-bold">On Hold</span>
+                                        <small class="text-muted">
+                                            @(Model.LastUpdated?.ToString("MMMM dd, yyyy h:mm tt") ?? DateTime.Now.ToString("MMMM dd, yyyy h:mm tt"))
+                                        </small>
+                                    </div>
+                                    <p class="mb-0">Your order is currently on hold.</p>
+                                    @if (Model.Payments?.Any(p => p.Status == PaymentStatus.Pending) == true)
+                                    {
+                                        <p class="mb-0 mt-2">
+                                            <i class="fas fa-exclamation-circle text-warning me-1"></i>
+                                            Payment verification required
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Cancelled -->
                         @if (Model.OrderStatus == OrderStatus.Cancelled)
                         {
                             <div class="timeline-item">
                                 <div class="timeline-content p-3 rounded-3 bg-light">
                                     <div class="d-flex justify-content-between mb-2">
                                         <span class="fw-bold">Cancelled</span>
-                                        <small class="text-muted">@DateTime.Now.ToString("MMMM dd, yyyy h:mm tt")</small>
+                                        <small class="text-muted">
+                                            @(Model.LastUpdated?.ToString("MMMM dd, yyyy h:mm tt") ?? DateTime.Now.ToString("MMMM dd, yyyy h:mm tt"))
+                                        </small>
                                     </div>
                                     <p class="mb-0">This order has been cancelled.</p>
+                                    @if (Model.Payments?.Any(p => p.Status == PaymentStatus.Refunded) == true)
+                                    {
+                                        <p class="mb-0 mt-2">
+                                            <i class="fas fa-undo-alt text-success me-1"></i>
+                                            Refund processed
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Returned -->
+                        @if (Model.OrderStatus == OrderStatus.Returned)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-content p-3 rounded-3 bg-light">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="fw-bold">Returned</span>
+                                        <small class="text-muted">
+                                            @(Model.LastUpdated?.ToString("MMMM dd, yyyy h:mm tt") ?? DateTime.Now.ToString("MMMM dd, yyyy h:mm tt"))
+                                        </small>
+                                    </div>
+                                    <p class="mb-0">This order has been returned.</p>
+                                    @if (Model.Payments?.Any(p => p.Status == PaymentStatus.Refunded) == true)
+                                    {
+                                        <p class="mb-0 mt-2">
+                                            <i class="fas fa-undo-alt text-success me-1"></i>
+                                            Refund processed
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Refunded -->
+                        @if (Model.OrderStatus == OrderStatus.Refunded)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-content p-3 rounded-3 bg-light">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="fw-bold">Refunded</span>
+                                        <small class="text-muted">
+                                            @(Model.LastUpdated?.ToString("MMMM dd, yyyy h:mm tt") ?? DateTime.Now.ToString("MMMM dd, yyyy h:mm tt"))
+                                        </small>
+                                    </div>
+                                    <p class="mb-0">This order has been refunded.</p>
+                                    @if (Model.Payments?.LastOrDefault() is Payment lastPayment)
+                                    {
+                                        <p class="mb-0 mt-2">
+                                            Refund Amount: <strong>@lastPayment.Amount.ToString("C")</strong>
+                                        </p>
+                                    }
                                 </div>
                             </div>
                         }

@@ -36,11 +36,7 @@ namespace TechXpress.Controllers
         {
             var order = await _orderService.GetOrderWithDetailsAsync(id);
 
-            //if (order == null || order.UserId != User.Identity.Name && !User.IsInRole("Admin"))
-            //{
-            //    TempData["ErrorMessage"] = "Order not found or you don't have permission to view it.";
-            //    return RedirectToAction("Index");
-            //}
+         
 
             return View(order);
         }
@@ -54,11 +50,7 @@ namespace TechXpress.Controllers
             {
                 var order = await _orderService.GetByIdAsync(id);
 
-                //if (order == null || order.UserId != User.Identity.Name)
-                //{
-                //    TempData["ErrorMessage"] = "Order not found or you don't have permission to process payment.";
-                //    return RedirectToAction("Index");
-                //}
+                
 
                 if (order.OrderStatus != OrderStatus.Pending)
                 {
