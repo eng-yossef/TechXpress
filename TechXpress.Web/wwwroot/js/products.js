@@ -57,14 +57,5 @@
     });
 
     // Star rating interaction
-    $(document).on('mouseenter', '.rating-input label', function () {
-        $(this).siblings('label').css('color', '#ddd');
-        $(this).css('color', '#ffc107').prevAll('label').css('color', '#ffc107');
-    }).on('mouseleave', '.rating-input', function () {
-        var checked = $(this).find('input:checked');
-        $(this).find('label').css('color', '#ddd');
-        if (checked.length) {
-            checked.nextAll('label').addBack('label[for="' + checked.attr('id') + '"]').css('color', '#ffc107');
-        }
-    });
+   
 });

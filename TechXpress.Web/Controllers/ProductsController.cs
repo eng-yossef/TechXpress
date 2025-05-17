@@ -114,9 +114,11 @@ namespace TechXpress.Web.Controllers
                 return NotFound();
             }
 
-            var similarProducts = await _productService.GetFilteredAsync(
+            var similarProducts = await _productService.GetFilteredProductsAsync(
                 filter: p => p.CategoryId == product.CategoryId && p.Id != product.Id,
-                take: 4);
+                take: 4,
+                includeProperties: "Reviews" // Include reviews for similar products
+                );
 
             var reviews = await _reviewService.GetFilteredAsync(
                 filter: r => r.ProductId == id,

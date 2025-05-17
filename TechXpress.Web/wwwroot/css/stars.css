@@ -41,16 +41,13 @@
         display: inline;
     }
 */
-
 .rating-input {
-    direction: rtl; /* Right to left for proper star highlighting */
-    unicode-bidi: bidi-override;
     display: inline-block;
 }
 
 .rating-stars {
     display: flex;
-    flex-direction: row-reverse; /* Display stars in reverse order but highlight correctly */
+    flex-direction: row-reverse; /* Maintains left-to-right selection */
     justify-content: flex-end;
 }
 
@@ -66,13 +63,8 @@
     transition: color 0.2s;
 }
 
-    .rating-input input[type="radio"]:checked ~ label,
-    .rating-input input[type="radio"]:hover ~ label,
-    .rating-input label:hover,
-    .rating-input label:hover ~ label {
-        color: #ffc107;
-    }
-
+/* Selection only (no hover) */
+.rating-input input[type="radio"]:checked ~ label,
 .rating-input input[type="radio"]:checked + label {
     color: #ffc107;
 }
