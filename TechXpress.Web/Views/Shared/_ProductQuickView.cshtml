@@ -51,19 +51,30 @@
         <!-- Product Details -->
         <div class="col-md-6">
             <h2 class="product-title mb-2">@Model.Name</h2>
-
             <!-- Rating -->
             <div class="rating mb-3">
                 @{
                     var avgRating = Model.Reviews?.Any() == true ? Model.Reviews.Average(r => r.Rating) : 0;
                     var reviewCount = Model.Reviews?.Count ?? 0;
                 }
-                @for (int i = 0; i < 5; i++)
+                @for (int i = 1; i <= 5; i++)
                 {
-                    <i class="@(i < avgRating ? "fas" : "far") fa-star @(i < avgRating ? "text-warning" : "text-muted")"></i>
+                    if (i <= (int)avgRating)
+                    {
+                        <i class="fas fa-star text-warning"></i>
+                    }
+                    else if (i - 0.5 <= avgRating)
+                    {
+                        <i class="fas fa-star-half-alt text-warning"></i>
+                    }
+                    else
+                    {
+                        <i class="far fa-star text-warning"></i>
+                    }
                 }
                 <span class="ms-2 small">(@reviewCount reviews)</span>
             </div>
+
 
             <!-- Price -->
             <div class="price-section mb-3">

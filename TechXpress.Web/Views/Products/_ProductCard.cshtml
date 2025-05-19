@@ -5,7 +5,7 @@
 <div class="card h-100 product-card shadow-sm hover-shadow transition-all">
     <!-- Product Image with Badges and Quick View -->
     <div class="product-image-container position-relative overflow-hidden">
-        <img src="@Model.ImageUrl" class="card-img-top product-image" alt="@Model.Name">
+        <img src="@Model.ImageUrl" class="card-img-top product-image" alt="@Model.Name" />
 
         <!-- Badges -->
         <div class="product-badges">
@@ -35,12 +35,11 @@
 
     <!-- Card Body -->
     <div class="card-body d-flex flex-column">
-        <!-- Category and Wishlist -->
         <div class="d-flex justify-content-between align-items-start mb-2">
             <span class="text-muted small">@Model.Category?.Name</span>
         </div>
 
-        <!-- Product Title -->
+        <!-- Title -->
         <h5 class="card-title mb-2 text-truncate-2" title="@Model.Name">@Model.Name</h5>
 
         <!-- Rating -->
@@ -48,13 +47,16 @@
         {
             <div class="mb-2">
                 <div class="rating-stars">
+                    @{
+                        var avgRating = Model.Reviews.Average(r => r.Rating);
+                    }
                     @for (int i = 1; i <= 5; i++)
                     {
-                        if (i <= (int)Model.Reviews.Average(r => r.Rating))
+                        if (i <= (int)avgRating)
                         {
                             <i class="fas fa-star text-warning"></i>
                         }
-                        else if (i - 0.5 <= Model.Reviews.Average(r => r.Rating))
+                        else if (i - 0.5 <= avgRating)
                         {
                             <i class="fas fa-star-half-alt text-warning"></i>
                         }
@@ -68,12 +70,11 @@
             </div>
         }
 
-        <!-- Price -->
+        <!-- Price and Stock -->
         <div class="mt-auto">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <span class="h5 text-primary fw-bold">@Model.Price.ToString("C")</span>
-                   
                 </div>
                 <span class="badge bg-light text-dark small stock-badge">
                     @Model.StockQuantity in stock
@@ -82,10 +83,10 @@
         </div>
     </div>
 
-    <!-- Card Footer with Action Buttons -->
+    <!-- Footer Buttons (Responsive Row) -->
     <div class="card-footer bg-transparent border-top-0 pt-0">
-        <div class="d-grid gap-2 d-md-flex justify-content-between">
-            <!-- View Details -->
+        <div class="d-flex flex-wrap gap-2 justify-content-between">
+            <!-- Details -->
             <a asp-action="Details" asp-route-id="@Model.Id"
                class="btn btn-outline-primary btn-sm flex-grow-1"
                title="View Details">
@@ -105,7 +106,7 @@
             </form>
 
             <!-- AI Description -->
-            <button class="btn btn-outline-info btn-sm ai-description-btn"
+            <button class="btn btn-outline-info btn-sm ai-description-btn flex-grow-1"
                     data-product-id="@Model.Id"
                     title="AI Description">
                 <i class="fas fa-robot"></i>
@@ -115,7 +116,6 @@
 </div>
 
 <style>
-    /* Product Card Styles */
     .product-card {
         border-radius: 0.75rem;
         transition: all 0.3s ease;
@@ -127,7 +127,6 @@
         transform: translateY(-5px);
     }
 
-    /* Product Image Container */
     .product-image-container {
         height: 180px;
         background-color: white;
@@ -146,7 +145,6 @@
         transform: scale(1.05);
     }
 
-    /* Badges */
     .product-badges {
         position: absolute;
         top: 10px;
@@ -180,7 +178,6 @@
         transform-origin: left;
     }
 
-    /* Quick View Overlay */
     .quick-view-overlay {
         position: absolute;
         top: 0;
@@ -196,7 +193,6 @@
         opacity: 1;
     }
 
-    /* Text truncation */
     .text-truncate-2 {
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -204,28 +200,29 @@
         overflow: hidden;
     }
 
-    /* Rating stars */
     .rating-stars {
         font-size: 0.9rem;
+        direction: rtl !important;
     }
 
-    /* Stock badge */
     .stock-badge {
         font-size: 0.75rem;
+    }
+
+    /* Responsive Button Fix */
+    .card-footer .btn {
+        min-width: 90px;
     }
 </style>
 
 <script>
-    $(document).ready(function() {
-        // Wishlist button toggle
-        $('.wishlist-btn').click(function(e) {
+    $(document).ready(function () {
+        $('.wishlist-btn').click(function (e) {
             e.preventDefault();
             $(this).find('i').toggleClass('far fas text-danger');
             const isWishlisted = $(this).find('i').hasClass('fas');
             $(this).attr('title', isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist');
 
-            // Here you would typically make an AJAX call to update the wishlist
-            // For now we'll just show a toast notification
             const toast = new bootstrap.Toast(document.getElementById('wishlistToast'));
             $('.toast-body').text(isWishlisted ? 'Added to wishlist!' : 'Removed from wishlist');
             toast.show();

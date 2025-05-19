@@ -6,7 +6,7 @@ using TechXpress.Web.Areas.Admin.Services;
 namespace TechXpress.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin,SuperAdmin")]
+    [Authorize(Roles = "Admin")]
     public class DashboardController : Controller
     {
         private readonly IAdminDashboardService _dashboardService;

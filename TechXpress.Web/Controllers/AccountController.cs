@@ -149,6 +149,8 @@ namespace TechXpress.Web.Controllers
         public async Task<IActionResult> Manage()
         {
             var user = await _userManager.GetUserAsync(User);
+            var profileUrl = User?.FindFirst("ProfilePictureUrl")?.Value ?? "/images/download.jpeg";
+
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
@@ -164,7 +166,7 @@ namespace TechXpress.Web.Controllers
                 PhoneNumber = user.PhoneNumber,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                ProfilePictureUrl = user.ProfilePictureUrl ?? "/images/download.jpeg",
+                ProfilePictureUrl = profileUrl,
                 AddressLine1 = user.AddressLine1 ?? "Not Provided",
                 AddressLine2 = user.AddressLine2 ?? string.Empty,
                 City = user.City ?? "Unknown City",

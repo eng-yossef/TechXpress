@@ -195,8 +195,13 @@
                                     <h3 class="card-title">@product.Name</h3>
                                     <p class="card-text">@product.Description</p>
                                     <div class="price mb-3">
-                                        <span class="text-danger display-4">$@((product.Price - (product.Price * 40 / 100)).ToString("0.00"))</span>
-                                        <span class="text-muted"><del>${@product.Price:0.00}</del></span>
+                                        <span class="text-danger display-4">$@((product.Price).ToString("0.00"))</span>
+
+                                        <span class="text-muted">
+                                            <del>
+                                                $@((Convert.ToDouble(product.Price) * 1.1).ToString("0.00"))
+                                            </del>
+                                        </span>
                                     </div>
                                     <div class="progress mb-3">
                                         <div class="progress-bar bg-danger" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
