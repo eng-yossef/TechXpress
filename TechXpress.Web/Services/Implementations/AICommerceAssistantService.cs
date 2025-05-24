@@ -247,30 +247,62 @@ namespace TechXpress.Web.Services.Implementations
         public async Task<SalesPerformanceReport> GenerateSalesPerformanceReport(List<Order> orders, DateTime startDate, DateTime endDate)
         {
             var prompt = new StringBuilder("Generate a comprehensive sales performance report with these sections:\n\n");
+
             prompt.AppendLine($"Time Period: {startDate:d} to {endDate:d}");
             prompt.AppendLine($"Total Orders: {orders.Count}");
             prompt.AppendLine($"Total Revenue: ${orders.Sum(o => o.TotalAmount):N2}");
 
+            // 1. Overview
             prompt.AppendLine("\n1. Overview:");
-            prompt.AppendLine("- Overall sales trend (daily/weekly)");
-            prompt.AppendLine("- Comparison to previous period");
-            prompt.AppendLine("- Key highlights and anomalies");
+            var ordersByDay = orders
+                .GroupBy(o => o.OrderDate.Date)
+                .OrderBy(g => g.Key)
+                .Select(g => $"{g.Key:MMM dd}: {g.Count()} orders, ${g.Sum(o => o.TotalAmount):N2} revenue");
+            prompt.AppendLine("- Daily Sales Trend:\n" + string.Join("\n", ordersByDay));
+
+            // 2. Product Performance
+            var productGroups = orders
+                .SelectMany(o => o.OrderDetails)
+                .GroupBy(i => i.Product.Name)
+                .Select(g => new
+                {
+                    Product = g.Key,
+                    Quantity = g.Sum(i => i.Quantity),
+                    Revenue = g.Sum(i => i.Price * i.Quantity)
+                })
+                .OrderByDescending(p => p.Revenue)
+                .ToList();
 
             prompt.AppendLine("\n2. Product Performance:");
-            prompt.AppendLine("- Top 5 selling products by revenue");
-            prompt.AppendLine("- Top 5 selling products by quantity");
-            prompt.AppendLine("- Underperforming products");
+            prompt.AppendLine("- Top 5 Products by Revenue:");
+            foreach (var p in productGroups.Take(5))
+                prompt.AppendLine($"  {p.Product} - ${p.Revenue:N2}");
+
+            prompt.AppendLine("- Top 5 Products by Quantity:");
+            foreach (var p in productGroups.OrderByDescending(p => p.Quantity).Take(5))
+                prompt.AppendLine($"  {p.Product} - {p.Quantity} units");
+
+            prompt.AppendLine("- Underperforming Products (Revenue < $100):");
+            foreach (var p in productGroups.Where(p => p.Revenue < 100))
+                prompt.AppendLine($"  {p.Product} - ${p.Revenue:N2}");
+
+            // 3. Customer Insights
+            var customerGroups = orders.GroupBy(o => o.UserId);
+            int repeatCustomers = customerGroups.Count(g => g.Count() > 1);
+            double averageOrderValue = (double)orders.Average(o => o.TotalAmount);
 
             prompt.AppendLine("\n3. Customer Insights:");
-            prompt.AppendLine("- Customer acquisition trends");
-            prompt.AppendLine("- Repeat customer rate");
-            prompt.AppendLine("- Average order value by customer segment");
+            prompt.AppendLine($"- Unique Customers: {customerGroups.Count()}");
+            prompt.AppendLine($"- Repeat Customer Rate: {(repeatCustomers * 100.0 / customerGroups.Count()):N2}%");
+            prompt.AppendLine($"- Average Order Value: ${averageOrderValue:N2}");
 
+            // 4. Recommendations (still left for AI to analyze based on data above)
             prompt.AppendLine("\n4. Recommendations:");
-            prompt.AppendLine("- Inventory adjustments needed");
-            prompt.AppendLine("- Marketing opportunities");
-            prompt.AppendLine("- Process improvements");
+            prompt.AppendLine("- Suggest inventory adjustments for underperforming products.");
+            prompt.AppendLine("- Identify marketing opportunities based on top-selling products.");
+            prompt.AppendLine("- Recommend process improvements based on sales and customer trends.");
 
+            // Generate report content using AI
             var reportContent = await GetAIResponse(prompt.ToString());
 
             return new SalesPerformanceReport

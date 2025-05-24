@@ -152,6 +152,15 @@ namespace TechXpress.Data.Repositories.OrderRepo
             return await query.AsNoTracking().ToListAsync();
         }
 
+        public async Task<IEnumerable<Order>> GetAllAsync() {
+            return await _context.Set<Order>()
+                .Include(o => o.User)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }
+
         public async Task UpdateOrderStatusAsync(int orderId, OrderStatus newStatus, string adminNotes = null)
         {
             var order = await _context.Orders
