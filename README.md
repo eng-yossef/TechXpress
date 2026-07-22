@@ -3,6 +3,9 @@
 ## 🌟 Overview
 TechXpress is a sophisticated e-commerce platform built with ASP.NET Core MVC (.NET 8.0), offering a modern shopping experience for technology and electronics products with AI-powered features.
 
+🎥 **Project Demo**  
+Watch the demo here: [YouTube Video](https://youtu.be/bY3F1Ea-RPE?si=mVztbbadxhp0B0dY)
+
 ## 🚀 Core Features
 
 ### 💻 Customer Features
